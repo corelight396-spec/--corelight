@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreLight - Arduino RGB Control Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        .dashboard-title {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .project-info {
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            padding: 0 40px;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.1);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            border: none;
+            background: none;
+            color: #888;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--accent-color);
+        }
+
+        .nav-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-container {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin: 20px 40px;
+        }
+
+        .back-button:hover {
+            background-color: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Versions de cards pour WIP */
+        .task-item {
+            background: rgba(0, 242, 254, 0.05);
+            border-left: 3px solid rgba(0, 242, 254, 0.5);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .task-item.completed {
+            border-left-color: #0f0;
+            opacity: 0.8;
+        }
+
+        .task-title {
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-family: var(--font-mono);
+        }
+
+        .task-description {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .task-progress {
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .task-progress-bar {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .objective-badge {
+            display: inline-block;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin: 8px 8px 8px 0;
+            font-family: var(--font-mono);
+        }
+
+        .schema-container {
+            background: rgba(0, 242, 254, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .schema-placeholder {
+            color: #888;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: rgba(0, 242, 254, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .video-placeholder {
+            background: rgba(0, 0, 0, 0.5);
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 3rem;
+        }
+
+        .video-info {
+            padding: 15px;
+        }
+
+        .video-title {
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .video-desc {
+            color: #ccc;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .faq-item {
+            background: rgba(0, 242, 254, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            margin-bottom: 15px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 15px;
+            background: rgba(0, 242, 254, 0.1);
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-question:hover {
+            background: rgba(0, 242, 254, 0.15);
+        }
+
+        .faq-toggle {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-toggle.open {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 15px;
+            color: #ccc;
+            line-height: 1.6;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-answer.show {
+            max-height: 500px;
+        }
+
+        .section-title {
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .status-online {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="corelight-animation" class="background-animation"></div>
+
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">CORELIGHT PROJECT</h1>
+            <p class="project-info">
+                <span class="status-badge"></span>Arduino RGB LED Control System
+            </p>
+        </div>
+        <div style="text-align: right; font-family: var(--font-mono); color: #888; font-size: 0.9rem;">
+            <div>Status: EN DÉVELOPPEMENT</div>
+            <div>v0.7 BETA</div>
+        </div>
+    </div>
+
+    <a href="index.html" class="back-button">← Retour à l'accueil</a>
+
+    <!-- Tabs Navigation -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('overview')">📊 OVERVIEW</button>
+        <button class="nav-tab" onclick="showTab('wip')">🔧 WIP</button>
+        <button class="nav-tab" onclick="showTab('objectives')">✅ OBJECTIFS</button>
+        <button class="nav-tab" onclick="showTab('schemas')">📐 SCHÉMAS</button>
+        <button class="nav-tab" onclick="showTab('videos')">🎥 VIDÉOS</button>
+        <button class="nav-tab" onclick="showTab('journal')">📓 JOURNAL</button>
+        <button class="nav-tab" onclick="showTab('faq')">❓ FAQ</button>
+    </div>
+
+    <!-- TAB: Overview -->
+    <div id="overview" class="tab-container active">
+        <h2 class="section-title">📊 APERÇU DU PROJET</h2>
+        <p style="color: #ccc; line-height: 1.8; margin-bottom: 25px;">
+            CoreLight est un système de contrôle RGB avancé basé sur Arduino. Le projet intègre une bande LED addressable, 
+            des capteurs son pour la réactivité audio, et le contrôle des ventilateurs RGB de votre PC. 
+            L'objectif est de créer une synchronisation complète entre les lumières et le son.
+        </p>
+
+        <h3 style="color: var(--accent-color); font-family: var(--font-mono); margin-bottom: 15px;">📦 COMPOSANTS PRINCIPAUX:</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div style="padding: 15px; background: rgba(0, 242, 254, 0.05); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                <div style="color: var(--accent-color); font-weight: 700; margin-bottom: 5px;">Arduino</div>
+                <div style="color: #ccc; font-size: 0.9rem;">Contrôleur principal du système</div>
+            </div>
+            <div style="padding: 15px; background: rgba(0, 242, 254, 0.05); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                <div style="color: var(--accent-color); font-weight: 700; margin-bottom: 5px;">Bande LED WS2812B</div>
+                <div style="color: #ccc; font-size: 0.9rem;">Leds adressables RGB</div>
+            </div>
+            <div style="padding: 15px; background: rgba(0, 242, 254, 0.05); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                <div style="color: var(--accent-color); font-weight: 700; margin-bottom: 5px;">Capteurs son</div>
+                <div style="color: #ccc; font-size: 0.9rem;">Réactivité audio en temps réel</div>
+            </div>
+            <div style="padding: 15px; background: rgba(0, 242, 254, 0.05); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                <div style="color: var(--accent-color); font-weight: 700; margin-bottom: 5px;">Ventilateurs RGB PC</div>
+                <div style="color: #ccc; font-size: 0.9rem;">Synchronisation avec les LED</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: WIP -->
+    <div id="wip" class="tab-container">
+        <h2 class="section-title">🔧 TRAVAUX EN COURS</h2>
+        
+        <div class="task-item">
+            <div class="task-title">Installation et configuration de l'Arduino</div>
+            <div class="task-description">Mise en place de la carte Arduino et connexion des composants basiques.</div>
+            <div class="task-progress">
+                <div class="task-progress-bar" style="width: 85%;"></div>
+            </div>
+        </div>
+
+        <div class="task-item">
+            <div class="task-title">Programmation du contrôle LED WS2812B</div>
+            <div class="task-description">Développement de la librairie pour contrôler la bande LED adressable.</div>
+            <div class="task-progress">
+                <div class="task-progress-bar" style="width: 70%;"></div>
+            </div>
+        </div>
+
+        <div class="task-item">
+            <div class="task-title">Intégration des capteurs son</div>
+            <div class="task-description">Calibration et programmation des capteurs de son pour la réactivité audio.</div>
+            <div class="task-progress">
+                <div class="task-progress-bar" style="width: 40%;"></div>
+            </div>
+        </div>
+
+        <div class="task-item">
+            <div class="task-title">Synchronisation des ventilateurs RGB</div>
+            <div class="task-description">Intégration du contrôle RGB des ventilateurs du PC via Arduino.</div>
+            <div class="task-progress">
+                <div class="task-progress-bar" style="width: 25%;"></div>
+            </div>
+        </div>
+
+        <div class="task-item">
+            <div class="task-title">Application de contrôle (USB/Serial)</div>
+            <div class="task-description">Création d'une interface pour contrôler tous les éléments via connexion série.</div>
+            <div class="task-progress">
+                <div class="task-progress-bar" style="width: 10%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Objectives -->
+    <div id="objectives" class="tab-container">
+        <h2 class="section-title">✅ OBJECTIFS ATTEINTS</h2>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #ccc; margin-bottom: 15px;">Phase 1 - Configuration de base ✓</h3>
+            <div>
+                <span class="objective-badge">✓ Arduino configuré et testé</span>
+                <span class="objective-badge">✓ Pins définies correctement</span>
+                <span class="objective-badge">✓ Alimentation stabilisée</span>
+                <span class="objective-badge">✓ Communication série établie</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #ccc; margin-bottom: 15px;">Phase 2 - Composants livrés ✓</h3>
+            <div>
+                <span class="objective-badge">✓ Bande LED WS2812B reçue</span>
+                <span class="objective-badge">✓ Capteurs son commandés</span>
+                <span class="objective-badge">✓ Câbles et connecteurs en stock</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #ccc; margin-bottom: 15px;">Phase 3 - Premiers tests ✓</h3>
+            <div>
+                <span class="objective-badge">✓ LED de test allumée</span>
+                <span class="objective-badge">✓ Cycle de couleurs basique fonctionnel</span>
+                <span class="objective-badge">✓ Sans problèmes d'alimentation</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Schemas -->
+    <div id="schemas" class="tab-container">
+        <h2 class="section-title">📐 SCHÉMAS ET DIAGRAMMES</h2>
+        
+        <div class="schema-container">
+            <div class="schema-placeholder">
+                🎨 Schéma de connexion (à venir)
+                <br><br>
+                <span style="font-size: 0.9rem; color: #666;">Arduino → Bande LED → Capteurs son → Ventilateurs RGB</span>
+            </div>
+        </div>
+
+        <div class="schema-container">
+            <div class="schema-placeholder">
+                📊 Diagramme de flux (à venir)
+                <br><br>
+                <span style="font-size: 0.9rem; color: #666;">Entrée audio → Traitement signal → Contrôle LED → Ventilateurs</span>
+            </div>
+        </div>
+
+        <div class="schema-container">
+            <div class="schema-placeholder">
+                ⚙️ Architecture logicielle (à venir)
+                <br><br>
+                <span style="font-size: 0.9rem; color: #666;">Firmware Arduino + Application contrôle</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Videos -->
+    <div id="videos" class="tab-container">
+        <h2 class="section-title">🎥 VIDÉOS ET DÉMONSTRATIONS</h2>
+        
+        <div class="video-grid">
+            <div class="video-card">
+                <div class="video-placeholder">▶️</div>
+                <div class="video-info">
+                    <div class="video-title">Unboxing des composants</div>
+                    <div class="video-desc">Premier aperçu des pièces livrées pour le projet.</div>
+                </div>
+            </div>
+
+            <div class="video-card">
+                <div class="video-placeholder">▶️</div>
+                <div class="video-info">
+                    <div class="video-title">Test initial de la LED</div>
+                    <div class="video-desc">Premier allumage et configuration de la bande LED.</div>
+                </div>
+            </div>
+
+            <div class="video-card">
+                <div class="video-placeholder">▶️</div>
+                <div class="video-info">
+                    <div class="video-title">Réactivité audio - Demo</div>
+                    <div class="video-desc">Démonstration de la synchronisation son/lumière.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: FAQ -->
+    <div id="journal" class="tab-container">
+        <h2 class="section-title">📓 JOURNAL DE BORD</h2>
+        <p>Écris ici les notes d'avancement du projet, visibles par tous.</p>
+        <textarea id="journal-input" style="width:100%;height:80px;margin-bottom:10px;padding:10px;background:rgba(0,0,0,0.3);color:#ccc;border:1px solid rgba(0,242,254,0.3);"></textarea>
+        <button id="journal-add" class="cta-button" style="margin-bottom:20px;">Ajouter l'entrée</button>
+        <div id="journal-entries"></div>
+    </div>
+
+    <div id="faq" class="tab-container">
+        <h2 class="section-title">❓ FAQ - QUESTIONS FRÉQUENTES</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Quel type d'Arduino utilisez-vous?</span>
+                <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+                J'utilise un Arduino Uno/Nano compatible. Le choix dépend de l'espace disponible et de la complexité du projet.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Comment fonctionnent les capteurs son?</span>
+                <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+                Les capteurs son analysent les fréquences audio en temps réel et envoient les données à l'Arduino 
+                via un pin analogique. Les LED réagissent ensuite en fonction des niveaux détectés.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Est-ce compatible avec tous les ventilateurs RGB?</span>
+                <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+                Les ventilateurs RGB avec contrôle 5V ou 12V peuvent être intégrés. Il faut vérifier le protocole 
+                de communication de votre modèle spécifique.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Combien de LED peuvent être contrôlées?</span>
+                <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+                La limite dépend de la mémoire de l'Arduino et de l'alimentation disponible. En général, 
+                les Uno/Nano peuvent gérer plusieurs centaines de LED WS2812B.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Où puis-je trouver le code source?</span>
+                <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+                Le code sera publié sur GitHub dès que le projet atteindra une version stable. 
+                Un lien sera ajouté ici et sur la page d'accueil.
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            const containers = document.querySelectorAll('.tab-container');
+            containers.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.nav-tab');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active to clicked button
+            event.target.classList.add('active');
+        }
+
+        // FAQ Toggle
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const answer = this.nextElementSibling;
+                const toggle = this.querySelector('.faq-toggle');
+                
+                answer.classList.toggle('show');
+                toggle.classList.toggle('open');
+            });
+        });
+
+        // Journal logic
+        const JOURNAL_KEY = 'corelightJournal';
+        function loadJournal() {
+            const raw = localStorage.getItem(JOURNAL_KEY);
+            return raw ? JSON.parse(raw) : [];
+        }
+        function saveJournal(entries) {
+            localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+        }
+        function renderJournal() {
+            const container = document.getElementById('journal-entries');
+            container.innerHTML = '';
+            const entries = loadJournal().slice().reverse();
+            entries.forEach(e => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '15px';
+                div.style.padding = '10px';
+                div.style.background = 'rgba(0,242,254,0.05)';
+                div.style.borderLeft = '3px solid var(--accent-color)';
+                div.innerHTML = `<div style="font-family:var(--font-mono);color:var(--accent-color);font-size:0.9rem;">${e.date}</div><div style="color:#ccc;">${e.text.replace(/\n/g,'<br>')}</div>`;
+                container.appendChild(div);
+            });
+        }
+        document.getElementById('journal-add').addEventListener('click', () => {
+            const textarea = document.getElementById('journal-input');
+            const text = textarea.value.trim();
+            if (!text) return;
+            const entries = loadJournal();
+            entries.push({date:new Date().toLocaleString(), text});
+            saveJournal(entries);
+            textarea.value = '';
+            renderJournal();
+        });
+        renderJournal();
+    </script>
+</body>
+</html>
