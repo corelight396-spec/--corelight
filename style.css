@@ -1,0 +1,313 @@
+**`style.css`**
+
+```css
+/* --- Variables CSS CoreLight (Palette Cyberpunk/RGB) --- */
+:root {
+    --color-bg-primary: #0A0A0F; /* Noir profond */
+    --color-bg-secondary: #1A1A2A; /* Gris très foncé */
+    --color-text-primary: #E0E0E0; /* Gris clair pour le corps */
+    --color-text-secondary: #00C6FF; /* Bleu électrique pour accents */
+    --color-accent-blue: linear-gradient(45deg, #00C6FF, #0072FF); /* Dégradé bleu */
+    --color-accent-magenta: linear-gradient(45deg, #FF00CC, #AD00FF); /* Dégradé magenta-violet */
+    --color-cta-start: #00C6FF; /* Début dégradé CTA */
+    --color-cta-end: #0072FF;   /* Fin dégradé CTA */
+
+    --font-primary: 'Inter', sans-serif;
+    --font-monospace: 'Space Mono', monospace; /* Si vous utilisez une police tech pour le compte à rebours */
+
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 4rem;
+    --spacing-xl: 6rem;
+
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+}
+
+/* --- Base & Reset --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px; /* Base pour rem */
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    overflow-x: hidden; /* Empêche le défilement horizontal dû aux animations */
+    min-height: 100vh; /* Pour que le footer reste en bas */
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--color-cta-start);
+}
+
+/* --- Animations de Fond (Élément .background-animation) --- */
+/* C'est ici que nous allons créer un effet de particules ou de dégradé animé */
+.background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.2; /* Subtil */
+    background: radial-gradient(circle at top left, #00C6FF 0%, transparent 40%),
+                radial-gradient(circle at bottom right, #FF00CC 0%, transparent 40%),
+                radial-gradient(circle at top right, #00FFFF 0%, transparent 40%);
+    background-size: 200% 200%; /* Plus grand que la vue pour l'animation */
+    animation: gradientShift 30s ease infinite alternate; /* Animation lente */
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+}
+
+/* --- Header --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: rgba(0, 0, 0, 0.4); /* Légèrement transparent */
+    backdrop-filter: blur(5px); /* Effet verre dépoli */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header .logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: var(--color-accent-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(0, 198, 255, 0.5); /* Effet néon subtil */
+}
+
+.main-nav {
+    /* Future navigation styles here */
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    flex-grow: 1; /* Prend l'espace disponible */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-xl) var(--spacing-md);
+    position: relative;
+    z-index: 1; /* Pour être au-dessus du background-animation */
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 8vw, 5rem); /* Taille réactive */
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: 2px;
+    line-height: 1.1;
+}
+
+.hero-title .glitch {
+    position: relative;
+    color: white; /* Couleur de base pour le texte */
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Halo blanc */
+    /* Animation de glitch pour le titre principal */
+    animation: glitch 1.5s linear infinite alternate;
+}
+
+.hero-title .glitch::before,
+.hero-title .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-title .glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 var(--color-text-secondary); /* Bleu */
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim-1 2s infinite alternate-reverse;
+}
+
+.hero-title .glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 var(--color-accent-magenta); /* Magenta */
+    clip: rect(60px, 450px, 70px, 0);
+    animation: glitch-anim-2 3s infinite alternate;
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes glitch-anim-1 {
+    0% { clip: rect(10px, 9999px, 50px, 0); }
+    15% { clip: rect(60px, 9999px, 80px, 0); }
+    30% { clip: rect(20px, 9999px, 40px, 0); }
+    45% { clip: rect(70px, 9999px, 90px, 0); }
+    60% { clip: rect(30px, 9999px, 50px, 0); }
+    75% { clip: rect(80px, 9999px, 100px, 0); }
+    90% { clip: rect(40px, 9999px, 60px, 0); }
+    100% { clip: rect(10px, 9999px, 50px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+    0% { clip: rect(5px, 9999px, 45px, 0); }
+    20% { clip: rect(75px, 9999px, 95px, 0); }
+    40% { clip: rect(15px, 9999px, 35px, 0); }
+    60% { clip: rect(85px, 9999px, 105px, 0); }
+    80% { clip: rect(25px, 9999px, 45px, 0); }
+    100% { clip: rect(5px, 9999px, 45px, 0); }
+}
+
+.hero-title .subtitle {
+    display: block;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    font-weight: 300;
+    color: var(--color-text-primary);
+    margin-top: var(--spacing-sm);
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.hero-description {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.8;
+}
+
+.coming-soon {
+    background-color: var(--color-bg-secondary);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 0 30px rgba(0, 198, 255, 0.15);
+    margin-top: var(--spacing-md);
+}
+
+.coming-soon p {
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.1rem;
+}
+
+.countdown {
+    font-family: var(--font-monospace);
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    margin: var(--spacing-md) 0;
+    color: white;
+    text-shadow: 0 0 15px var(--color-accent-magenta);
+}
+
+.cta-button {
+    display: inline-block;
+    background: var(--color-accent-blue);
+    color: white;
+    padding: 0.9rem 2.2rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 5px 20px rgba(0, 198, 255, 0.3);
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 198, 255, 0.5);
+    color: white; /* S'assurer que le texte reste blanc sur hover */
+}
+
+.social-links {
+    margin-top: var(--spacing-lg);
+}
+
+.social-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    margin: 0 var(--spacing-sm);
+    border: 2px solid var(--color-text-secondary);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: 700;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.social-icon:hover {
+    background: var(--color-accent-magenta);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 15px var(--color-accent-magenta);
+}
+
+/* --- Footer --- */
+.footer {
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(224, 224, 224, 0.6);
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
+    margin-top: auto; /* Pousse le footer vers le bas */
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .header {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .header .logo {
+        font-size: 1.5rem;
+    }
+
+    .hero-section {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+
+    .hero-description {
+        font-size: 1rem;
+        margin-top: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .cta-button {
+        padding: 0.8rem 1.8rem;
+    }
+
+    .countdown {
+        font-size: 2rem;
+    }
+}
