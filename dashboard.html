@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CoreLight Dashboard – Projet Arduino RGB cyberpunk">
+    <title>CoreLight – Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <header class="dashboard-header">
+        <h1>CORELIGHT <span class="version">v0.7 β</span></h1>
+        <a href="./index.html" class="back neon-back">← RETURN TO GATEWAY</a>
+    </header>
+
+    <nav class="terminal-nav">
+        <button class="tab-btn active" data-tab="overview">[ OVERVIEW ]</button>
+        <button class="tab-btn" data-tab="wip">[ WORKLOG ]</button>
+        <button class="tab-btn" data-tab="objectives">[ CHECKPOINTS ]</button>
+        <button class="tab-btn" data-tab="schemas">[ SCHEMATICS ]</button>
+        <button class="tab-btn" data-tab="videos">[ FOOTAGE ]</button>
+        <button class="tab-btn" data-tab="journal">[ DATALOG ]</button>
+        <button class="tab-btn" data-tab="faq">[ QUERY ]</button>
+    </nav>
+
+    <main class="tab-content">
+
+        <!-- OVERVIEW -->
+        <section id="overview" class="tab-panel active">
+            <h2 class="section-header terminal-header">>>> SECTION : OVERVIEW</h2>
+            <p>CoreLight est un système RGB réactif basé sur Arduino.</p>
+            <ul>
+                <li>Contrôle WS2812B</li>
+                <li>Réactivité audio (micro + FFT)</li>
+                <li>Synchronisation ventilateurs RGB PC</li>
+                <li>Ambiance cyberpunk / neon</li>
+            </ul>
+        </section>
+
+        <!-- WORKLOG (WIP) -->
+        <section id="wip" class="tab-panel">
+            <h2 class="section-header terminal-header">>>> SECTION : WORKLOG</h2>
+            <div class="task">Arduino + WS2812B ............... 85%</div>
+            <div class="task">Détection audio basique .......... 65%</div>
+            <div class="task">Mapping ventilateurs RGB ......... 30%</div>
+            <div class="task">Interface PC (Serial / Python) .... 15%</div>
+        </section>
+
+        <!-- CHECKPOINTS -->
+        <section id="objectives" class="tab-panel">
+            <h2 class="section-header terminal-header">>>> SECTION : CHECKPOINTS</h2>
+            <div class="checkpoint ok">[ OK ] Alim 5V stable</div>
+            <div class="checkpoint ok">[ OK ] Première boucle FastLED</div>
+            <div class="checkpoint ok">[ OK ] Détection crête audio</div>
+            <div class="checkpoint work">[ WORK ] Mapping ARGB ventilateurs</div>
+        </section>
+
+        <!-- SCHEMATICS (placeholder) -->
+        <section id="schemas" class="tab-panel">
+            <h2 class="section-header terminal-header">>>> SECTION : SCHEMATICS</h2>
+            <p class="coming-soon">[ En cours de rédaction – schema coming soon ]</p>
+        </section>
+
+        <!-- VIDEOS / FOOTAGE -->
+        <section id="videos" class="tab-panel">
+            <h2 class="section-header terminal-header">>>> SECTION : FOOTAGE</h2>
+            <div id="footage-thumb-container" style="display: flex; gap: 1em; flex-wrap: wrap;">
+                <div class="footage-thumb" style="width: 120px; height: 120px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 8px #0ff8; cursor: pointer; position: relative; background: #111; display: flex; align-items: center; justify-content: center;" onclick="openFootageModal()">
+                    <img src="./logo.png" alt="Unboxing" style="width: 64px; height: 64px; object-fit: contain; opacity: 0.9; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2;">
+                    <span style="position: absolute; color: #0ff; font-size: 2em; pointer-events: none; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3;">▶</span>
+                    <div style="width: 100%; height: 100%; background: #111; opacity: 0.7; position: absolute; left: 0; top: 0; z-index: 1;"></div>
+                </div>
+            </div>
+            <div style="margin: 0.5em 0 1.5em 0; color: #0ff; font-family: 'Space Mono', monospace; font-size: 1em;">
+                Unboxing des composants principaux du projet CoreLight.
+            </div>
+            <!-- Modal lecteur vidéo -->
+            <div id="footage-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000c; align-items:center; justify-content:center; z-index:1000;">
+                <div style="position:relative; background:#111; border-radius:12px; box-shadow:0 0 32px #0ffb; padding:1em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <button onclick="closeFootageModal()" style="position:absolute; top:8px; right:8px; background:#222; color:#0ff; border:none; font-size:1.5em; border-radius:50%; width:36px; height:36px; cursor:pointer;">×</button>
+                    <video id="footage-video" controls style="display:block; margin:0 auto; max-width:80vw; max-height:70vh; border-radius:8px; background:#000;" poster="./logo.png">
+                        <source src="./unboxing.mp4" type="video/mp4">
+                        Votre navigateur ne supporte pas la lecture vidéo.
+                    </video>
+                </div>
+            </div>
+            <p class="coming-soon">[ Vidéos en préparation ]</p>
+            <script>
+            function openFootageModal() {
+                document.getElementById('footage-modal').style.display = 'flex';
+                var vid = document.getElementById('footage-video');
+                vid.currentTime = 0;
+                vid.play();
+            }
+            function closeFootageModal() {
+                document.getElementById('footage-modal').style.display = 'none';
+                var vid = document.getElementById('footage-video');
+                vid.pause();
+            }
+            // Option plein écran sur double-clic
+            document.addEventListener('DOMContentLoaded', function() {
+                var vid = document.getElementById('footage-video');
+                if (vid) {
+                    vid.addEventListener('dblclick', function() {
+                        if (vid.requestFullscreen) vid.requestFullscreen();
+                        else if (vid.webkitRequestFullscreen) vid.webkitRequestFullscreen();
+                        else if (vid.msRequestFullscreen) vid.msRequestFullscreen();
+                    });
+                }
+            });
+            </script>
+        </section>
+
+        <!-- JOURNAL -->
+        <section id="journal" class="tab-panel">
+            <h2 class="section-header terminal-header">>>> SECTION : DATALOG</h2>
+            <textarea id="journal-input" placeholder="Nouvelle entrée..."></textarea>
+            <button id="journal-add">LOG ENTRY</button>
+            <div id="journal-entries"></div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="tab-panel">
+            <h2 class="section-header terminal-header">>>> SECTION : QUERY</h2>
+            <details>
+                <summary>Quel Arduino ?</summary>
+                <p>Uno / Nano / ESP32 – selon la RAM nécessaire</p>
+            </details>
+            <details>
+                <summary>Combien de LED max ?</summary>
+                <p>~600–800 sur Uno, 1000+ sur ESP32</p>
+            </details>
+        </section>
+
+    </main>
+
+    <script src="./script.js"></script>
+</body>
+</html>
