@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="CoreLight : système RGB réactif Arduino – ambiance cyberpunk immersive">
+    <title>CoreLight – PROTOCOL INITIALIZATION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <style>
+    /* Responsive mobile adjustments */
+    @media (max-width: 600px) {
+        body {
+            font-size: 1.05em;
+            padding: 0;
+            margin: 0;
+        }
+        .header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5em;
+        }
+        .logo img {
+            width: 60px;
+            height: auto;
+        }
+        .hero {
+            padding: 0 0.5em;
+        }
+        .subtitle-wrapper {
+            font-size: 1em;
+        }
+        .description {
+            font-size: 1em;
+        }
+        .neon-button {
+            font-size: 1em;
+            padding: 0.7em 1.2em;
+        }
+        #audio-visualizer {
+            width: 98vw !important;
+            min-width: 0;
+            max-width: 100vw;
+            height: 80px !important;
+        }
+        #fake-terminal-section {
+            max-width: 98vw !important;
+            padding: 0.7rem 0.2rem;
+            font-size: 0.98em;
+        }
+        .terminal-footer {
+            font-size: 0.95em;
+            padding: 0.7em 0.2em;
+            word-break: break-word;
+        }
+    }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-anim" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none; background:rgba(40,30,60,0.60);"></canvas>
+    <div class="crt-overlay" style="background:rgba(0,0,0,0.08);"></div>
+    <!-- scanlines supprimé -->
+    <div class="vignette" style="background:radial-gradient(ellipse at center, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.18) 100%);"></div>
+
+    <header class="header">
+        <div class="logo">
+            <img src="./logo.png" alt="CoreLight" class="logo-glitch">
+        </div>
+        <div style="margin-left:auto;">
+            <label for="theme-select" style="color:#00f6ff;font-family:'Space Mono',monospace;font-size:1rem;">Thème&nbsp;:</label>
+            <select id="theme-select" style="background:#05000a;color:#00f6ff;border:1.5px solid #00f6ff;border-radius:6px;padding:2px 8px;font-family:'Space Mono',monospace;">
+                <option value="cyan">Cyan</option>
+                <option value="pink">Rose</option>
+                <option value="green">Vert</option>
+                <option value="purple">Violet</option>
+            </select>
+        </div>
+    </header>
+
+    <main class="hero">
+        <h1 class="glitch" data-text="CORE_LIGHT">
+            CORE_LIGHT
+        </h1>
+        
+        <div class="subtitle-wrapper">
+            <p class="subtitle glitch-small" data-text="NEON PROTOCOL v0.7">NEON PROTOCOL v0.7</p>
+            <p class="status-line">SYSTEM ONLINE — AWAITING MATRIX ACCESS</p>
+        </div>
+
+        <p class="description">
+            Audio-réactif. WS2812B. Ventilateurs synchronisés.<br>
+            Plongez dans la grille néon.
+        </p>
+
+        <a href="./dashboard.html" class="neon-button glitch-button">
+            <span>ENTER THE GRID</span>
+            <div class="button-glitch-layer"></div>
+        </a>
+
+        <canvas id="audio-visualizer" width="700" height="120" style="display:block;margin:0 auto 2rem auto;width:90%;max-width:700px;height:120px;background:rgba(13,0,21,0.4);border-radius:12px;box-shadow:0 0 24px #00f6ff44;z-index:2;"></canvas>
+    <!-- Remplacer l'audio-visualizer par un effet d'éclairs réalistes -->
+    <canvas id="lightning-visualizer" width="700" height="120" style="display:block;margin:0 auto 2rem auto;width:90%;max-width:700px;height:120px;background:rgba(13,0,21,0.18);border-radius:12px;box-shadow:0 0 24px #00f6ff44;z-index:2;"></canvas>
+
+        <section id="fake-terminal-section" style="max-width:700px;margin:0 auto 2rem auto;background:rgba(13,0,21,0.7);border-radius:10px;box-shadow:0 0 18px #00f6ff33;padding:1.2rem 1rem;">
+            <div id="fake-terminal" style="font-family:'Space Mono',monospace;font-size:1.1rem;color:#00f6ff;min-height:90px;white-space:pre-wrap;"></div>
+            <input id="terminal-input" type="text" autocomplete="off" style="width:100%;background:transparent;border:none;border-bottom:2px solid #00f6ff;color:#fff;font-size:1.1rem;padding:0.4rem 0;margin-top:0.7rem;outline:none;" placeholder="Tape une commande (help, about, matrix...)" />
+        </section>
+    </main>
+
+    <footer class="terminal-footer">
+        <p>© 2026 CoreLight Industries — Valais Grid Node<br>
+        <a href="https://www.instagram.com/corelight.rgblabs/?__pwa=1#" target="_blank" style="color:#00f6ff;text-decoration:none;font-family:'Space Mono',monospace;font-size:1.1em;">Instagram : @corelight.rgblabs</a></p>
+    </footer>
+
+    <script src="./script.js"></script>
+    <script src="./bg-anim.js"></script>
+    <script src="./audio-visualizer.js"></script>
+</script>
+<script>
+// Effet d'éclairs réalistes sur le canvas lightning-visualizer
+function drawLightning(ctx, startX, startY, endX, endY, branch, depth) {
+    if (depth > 7) return;
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const angle = Math.atan2(dy, dx);
+    const jaggedness = 8 + Math.random() * 8;
+    let prevX = startX, prevY = startY;
+    for (let i = 1; i <= dist; i += jaggedness) {
+        const x = startX + Math.cos(angle) * i + (Math.random() - 0.5) * 8;
+        const y = startY + Math.sin(angle) * i + (Math.random() - 0.5) * 8;
+        ctx.strokeStyle = branch ? 'rgba(0,255,255,0.13)' : 'rgba(0,255,255,0.85)';
+        ctx.lineWidth = branch ? 1 : 2.5;
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        prevX = x; prevY = y;
+        // Branches
+        if (!branch && Math.random() < 0.08 && depth < 5) {
+            const branchLen = dist * (0.3 + Math.random() * 0.2);
+            const branchAngle = angle + (Math.random() - 0.5) * Math.PI/2;
+            drawLightning(ctx, x, y, x + Math.cos(branchAngle) * branchLen, y + Math.sin(branchAngle) * branchLen, true, depth+1);
+        }
+    }
+}
+
+function animateLightning() {
+    const canvas = document.getElementById('lightning-visualizer');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Générer 1 à 3 éclairs à chaque animation
+    const strikes = 1 + Math.floor(Math.random()*3);
+    for (let i = 0; i < strikes; i++) {
+        const startX = 40 + Math.random() * (canvas.width-80);
+        const startY = 0;
+        const endX = startX + (Math.random()-0.5)*60;
+        const endY = canvas.height;
+        drawLightning(ctx, startX, startY, endX, endY, false, 0);
+    }
+    // Glow
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = 'rgba(0,255,255,0.08)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+setInterval(animateLightning, 350);
+</script>
+</body>
+</html>
