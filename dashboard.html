@@ -9,66 +9,76 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
-    
+
     <style>
-        .progress-container { background:rgba(0,246,255,0.1); border:1px solid #00f6ff; border-radius:8px; height:28px; overflow:hidden; margin:12px 0; }
-        .progress-bar { height:100%; background:linear-gradient(90deg,#00f6ff,#d600f9); box-shadow:0 0 20px #00f6ff,0 0 40px #d600f9; transition:width 2.8s cubic-bezier(0.25,0.1,0.25,1); animation:neon-pulse 3s infinite alternate; }
-        @keyframes neon-pulse { from{filter:brightness(1) drop-shadow(0 0 8px #00f6ff);} to{filter:brightness(1.3) drop-shadow(0 0 25px #d600f9);} }
+        /* ── Progress bars ─────────────────────────────────── */
+        .progress-container { background:rgba(0,246,255,0.1); border:1px solid var(--neon-cyan); border-radius:8px; height:28px; overflow:hidden; margin:12px 0; }
+        .progress-bar { height:100%; background:linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); box-shadow:0 0 20px var(--neon-cyan), 0 0 40px var(--neon-purple); transition:width 2.8s cubic-bezier(0.25,0.1,0.25,1); animation:neon-pulse 3s infinite alternate; }
+        @keyframes neon-pulse { from{filter:brightness(1) drop-shadow(0 0 8px var(--neon-cyan));} to{filter:brightness(1.3) drop-shadow(0 0 25px var(--neon-purple));} }
+
+        /* ── Hardware cards ─────────────────────────────────── */
         .hardware-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
-        .hardware-card { position:relative; margin:0; background:rgba(13,0,21,0.8); border:1px solid #00f6ff; border-radius:12px; overflow:hidden; box-shadow:0 0 25px rgba(0,246,255,0.3); transition:transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease; }
+        .hardware-card { position:relative; margin:0; background:rgba(13,0,21,0.8); border:1px solid var(--neon-cyan); border-radius:12px; overflow:hidden; box-shadow:0 0 25px rgba(0,246,255,0.3); transition:transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease; }
         .hardware-card::before { content:''; position:absolute; top:-120%; left:-45%; width:55%; height:320%; background:linear-gradient(120deg, transparent 36%, rgba(255,255,255,0.24) 50%, transparent 64%); transform:rotate(18deg); pointer-events:none; opacity:0; transition:opacity 0.2s ease; z-index:2; }
-        .hardware-card:hover { transform:translateY(-4px); border-color:#39ff14; box-shadow:0 0 24px rgba(0,246,255,0.45), 0 0 38px rgba(57,255,20,0.2); }
+        .hardware-card:hover { transform:translateY(-4px); border-color:var(--neon-green); box-shadow:0 0 24px rgba(0,246,255,0.45), 0 0 38px rgba(57,255,20,0.2); }
         .hardware-card:hover::before { opacity:1; animation:hardware-sweep 1.15s ease forwards; }
-        .hardware-card img { display:block; width:100%; height:220px; object-fit:cover; transform:scale(1); transition:transform 0.4s ease, filter 0.3s ease; }
+        .hardware-card img { display:block; width:100%; height:220px; object-fit:cover; transition:transform 0.4s ease, filter 0.3s ease; }
         .hardware-card:hover img { transform:scale(1.04); filter:saturate(1.08) contrast(1.03); }
         .hardware-card figcaption { padding:0.7rem 0.9rem 1rem; color:#9beeff; font-size:0.95rem; letter-spacing:0.06em; text-transform:uppercase; }
         @keyframes hardware-sweep { 0% { transform:translateX(-130%) rotate(18deg); } 100% { transform:translateX(260%) rotate(18deg); } }
-        /* ── LED STRIP ───────────────────────────────────────────── */
+
+        /* ── LED strip ─────────────────────────────────────── */
         .ledstrip-shell { background:rgba(5,0,10,0.92); border:1px solid rgba(0,246,255,0.4); border-radius:16px; padding:1.4rem 1rem 1rem; box-shadow:0 0 36px rgba(0,246,255,0.18); }
         .ledstrip-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem; }
-        .ledstrip-title { color:#00f6ff; font-size:0.85rem; letter-spacing:0.14em; text-transform:uppercase; }
-        .ledstrip-mode-badge { padding:0.22rem 0.65rem; border-radius:999px; font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; border:1px solid #39ff14; color:#39ff14; background:rgba(57,255,20,0.1); transition:all 0.2s; }
-        #led-strip-canvas { display:block; width:100%; max-width:100%; background:#0a0014; border:2px solid #00f6ff; border-radius:12px; box-shadow:0 0 30px #00f6ff88; cursor:crosshair; }
+        .ledstrip-title { color:var(--neon-cyan); font-size:0.85rem; letter-spacing:0.14em; text-transform:uppercase; }
+        .ledstrip-mode-badge { padding:0.22rem 0.65rem; border-radius:999px; font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; border:1px solid var(--neon-green); color:var(--neon-green); background:rgba(57,255,20,0.1); transition:all 0.2s; }
+        #led-strip-canvas { display:block; width:100%; max-width:100%; background:#0a0014; border:2px solid var(--neon-cyan); border-radius:12px; box-shadow:0 0 30px rgba(0,246,255,0.5); cursor:crosshair; }
         .ledstrip-hint { color:#4ecdc4; font-size:0.82rem; margin:0.6rem 0 1rem; text-align:center; }
         .led-btn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:0.6rem; margin-top:0.8rem; }
         .led-btn { display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.65rem 0.5rem; border-radius:9px; border:1px solid currentColor; background:rgba(0,0,0,0.35); font-family:inherit; font-size:0.82rem; letter-spacing:0.08em; cursor:pointer; transition:background 0.18s, box-shadow 0.18s, transform 0.12s; }
         .led-btn:hover { background:rgba(255,255,255,0.08); transform:translateY(-1px); }
         .led-btn:active { transform:translateY(0); }
-        .led-btn.cyan  { color:#00f6ff; } .led-btn.cyan:hover  { box-shadow:0 0 10px #00f6ff66; }
-        .led-btn.pink  { color:#ff2ea5; } .led-btn.pink:hover  { box-shadow:0 0 10px #ff2ea566; }
-        .led-btn.green { color:#39ff14; } .led-btn.green:hover { box-shadow:0 0 10px #39ff1466; }
-        .led-btn.purple{ color:#d600f9; } .led-btn.purple:hover{ box-shadow:0 0 10px #d600f966; }
-        .led-btn.white { color:#ffffff; } .led-btn.white:hover { box-shadow:0 0 10px #ffffff44; }
-        .led-btn.off   { color:#446; border-color:#446; }
+        .led-btn.cyan  { color:var(--neon-cyan); }  .led-btn.cyan:hover  { box-shadow:0 0 10px rgba(0,246,255,0.4); }
+        .led-btn.pink  { color:var(--neon-pink); }  .led-btn.pink:hover  { box-shadow:0 0 10px rgba(255,46,165,0.4); }
+        .led-btn.green { color:var(--neon-green); } .led-btn.green:hover { box-shadow:0 0 10px rgba(57,255,20,0.4); }
+        .led-btn.purple{ color:var(--neon-purple); }.led-btn.purple:hover{ box-shadow:0 0 10px rgba(214,0,249,0.4); }
+        .led-btn.white { color:#ffffff; }            .led-btn.white:hover { box-shadow:0 0 10px rgba(255,255,255,0.25); }
+        .led-btn.off   { color:#556; border-color:#556; }
         .led-btn.active-mode { background:rgba(255,255,255,0.13); box-shadow:0 0 14px rgba(0,246,255,0.45); }
-        @media (max-width:600px) { .led-btn-grid { grid-template-columns:repeat(2,1fr); } }
+
+        /* ── Footage ───────────────────────────────────────── */
         .footage-shell { position:relative; padding:1rem; border:1px solid rgba(0,246,255,0.5); border-radius:14px; background:linear-gradient(135deg, rgba(0,246,255,0.08), rgba(214,0,249,0.08)); box-shadow:0 0 30px rgba(0,246,255,0.18); overflow:hidden; }
         .footage-shell::before { content:''; position:absolute; inset:-120% auto auto -40%; width:70%; height:300%; background:linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.13) 50%, transparent 65%); transform:rotate(18deg); animation:footage-sweep 4.8s linear infinite; pointer-events:none; }
-        .footage-label { display:inline-block; margin:0 0 0.9rem; padding:0.28rem 0.72rem; border:1px solid #39ff14; border-radius:999px; color:#39ff14; font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; background:rgba(57,255,20,0.12); }
-        .footage-video { display:block; width:100%; border:1px solid #00f6ff; border-radius:10px; background:#000; box-shadow:0 0 18px rgba(0,246,255,0.33), 0 0 38px rgba(214,0,249,0.15); }
+        .footage-label { display:inline-block; margin:0 0 0.9rem; padding:0.28rem 0.72rem; border:1px solid var(--neon-green); border-radius:999px; color:var(--neon-green); font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; background:rgba(57,255,20,0.12); }
+        .footage-video { display:block; width:100%; border:1px solid var(--neon-cyan); border-radius:10px; background:#000; box-shadow:0 0 18px rgba(0,246,255,0.33), 0 0 38px rgba(214,0,249,0.15); }
         .footage-caption { margin-top:0.85rem; color:#b4f7ff; font-size:0.95rem; line-height:1.55; }
         @keyframes footage-sweep { 0% { transform:translateX(-120%) rotate(18deg); } 100% { transform:translateX(240%) rotate(18deg); } }
+
+        /* ── Mobile overrides ──────────────────────────────── */
         @media (max-width: 720px) {
             .footage-shell { padding:0.75rem; border-radius:12px; }
             .footage-label { font-size:0.72rem; letter-spacing:0.12em; }
             .footage-caption { font-size:0.9rem; }
             .hardware-card:hover { transform:none; }
             .hardware-card:hover img { transform:none; }
+            .led-btn-grid { grid-template-columns:repeat(2,1fr); }
         }
     </style>
 </head>
 <body>
 
-    <div class="crt-overlay"></div>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <div class="crt-overlay" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
 
     <header class="dashboard-header">
         <h1>CORELIGHT <span class="version">v0.8.1 β</span></h1>
-        <a href="./index.html" class="back neon-back">← RETURN TO GATEWAY</a>
+        <a href="./index.html" class="neon-back">← RETURN TO GATEWAY</a>
     </header>
 
-    <nav class="terminal-nav">
+    <nav class="terminal-nav" role="tablist" aria-label="Dashboard sections">
         <button class="tab-btn active" data-tab="overview">[ OVERVIEW ]</button>
         <button class="tab-btn" data-tab="wip">[ WORKLOG ]</button>
         <button class="tab-btn" data-tab="objectives">[ CHECKPOINTS ]</button>
@@ -80,22 +90,31 @@
         <button class="tab-btn" data-tab="faq">[ QUERY ]</button>
     </nav>
 
-    <main class="tab-content">
+    <main class="tab-content" id="main-content">
 
         <!-- OVERVIEW -->
         <section id="overview" class="tab-panel active">
             <h2 class="section-header terminal-header">>>> SECTION : OVERVIEW</h2>
             <p>CoreLight est un système RGB réactif basé sur Arduino.</p>
-            <ul><li>Contrôle WS2812B</li><li>Réactivité audio (micro + FFT)</li><li>Synchronisation ventilateurs RGB PC</li><li>Ambiance cyberpunk / neon</li></ul>
+            <ul>
+                <li>Contrôle WS2812B</li>
+                <li>Réactivité audio (micro + FFT)</li>
+                <li>Synchronisation ventilateurs RGB PC</li>
+                <li>Ambiance cyberpunk / neon</li>
+            </ul>
         </section>
 
         <!-- WORKLOG -->
         <section id="wip" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : WORKLOG</h2>
-            <div class="task">Arduino + WS2812B</div><div class="progress-container"><div class="progress-bar" style="width:85%"></div></div>
-            <div class="task">Détection audio basique</div><div class="progress-container"><div class="progress-bar" style="width:65%"></div></div>
-            <div class="task">Mapping ventilateurs RGB</div><div class="progress-container"><div class="progress-bar" style="width:30%"></div></div>
-            <div class="task">Interface PC (Serial / Python)</div><div class="progress-container"><div class="progress-bar" style="width:15%"></div></div>
+            <div class="task">Arduino + WS2812B</div>
+            <div class="progress-container" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-label="Arduino + WS2812B : 85%"><div class="progress-bar" style="width:85%"></div></div>
+            <div class="task">Détection audio basique</div>
+            <div class="progress-container" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="Détection audio : 65%"><div class="progress-bar" style="width:65%"></div></div>
+            <div class="task">Mapping ventilateurs RGB</div>
+            <div class="progress-container" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" aria-label="Mapping ventilateurs : 30%"><div class="progress-bar" style="width:30%"></div></div>
+            <div class="task">Interface PC (Serial / Python)</div>
+            <div class="progress-container" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100" aria-label="Interface PC : 15%"><div class="progress-bar" style="width:15%"></div></div>
         </section>
 
         <!-- CHECKPOINTS -->
@@ -107,22 +126,22 @@
             <div class="checkpoint work">[ WORK ] Mapping ARGB ventilateurs</div>
         </section>
 
-        <!-- HARDWARE (tes photos) -->
+        <!-- HARDWARE -->
         <section id="hardware" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : HARDWARE PROTOTYPE</h2>
             <div class="hardware-grid">
                 <figure class="hardware-card">
-                    <img src="./prototype1.jpg" alt="Prototype 1">
-                    <figcaption>Prototype 1</figcaption>
+                    <img src="./prototype1.jpg" alt="Prototype CoreLight 1 – Arduino avec capteurs et câblage" loading="lazy" width="400" height="220">
+                    <figcaption>Prototype 1 — Capteurs & câblage</figcaption>
                 </figure>
                 <figure class="hardware-card">
-                    <img src="./prototype2.jpg" alt="Prototype 2">
-                    <figcaption>Prototype 2</figcaption>
+                    <img src="./prototype2.jpg" alt="Prototype CoreLight 2 – Setup complet avec LEDs et écran" loading="lazy" width="400" height="220">
+                    <figcaption>Prototype 2 — Setup complet</figcaption>
                 </figure>
             </div>
         </section>
 
-        <!-- LED STRIP INTERACTIF -->
+        <!-- LED STRIP -->
         <section id="ledstrip" class="tab-panel">
             <h2 class="section-header terminal-header">>>> BANDEAU WS2812B – 30 LEDs</h2>
             <div class="ledstrip-shell">
@@ -130,60 +149,72 @@
                     <span class="ledstrip-title">WS2812B · 30 LEDs · 5V</span>
                     <span class="ledstrip-mode-badge" id="led-mode-badge">MODE : MANUEL</span>
                 </div>
-                <canvas id="led-strip-canvas" width="900" height="160"></canvas>
+                <canvas id="led-strip-canvas" width="900" height="160" aria-label="Bandeau LED interactif – 30 LEDs WS2812B"></canvas>
                 <p class="ledstrip-hint">Clique sur une LED pour changer sa couleur individuellement</p>
-                <div class="led-btn-grid">
-                    <button class="led-btn cyan"   id="btn-music"    onclick="ledMode('music')">▶ SIMULATE MUSIC</button>
-                    <button class="led-btn pink"   id="btn-rainbow"  onclick="ledMode('rainbow')">◈ RAINBOW</button>
-                    <button class="led-btn purple" id="btn-lightning" onclick="ledMode('lightning')">⚡ LIGHTNING</button>
-                    <button class="led-btn green"  id="btn-pulse"    onclick="ledMode('pulse')">◉ PULSE</button>
-                    <button class="led-btn white"  id="btn-white"    onclick="ledMode('white')">○ WHITE</button>
-                    <button class="led-btn off"    id="btn-off"      onclick="ledMode('off')">■ ALL OFF</button>
+                <div class="led-btn-grid" role="group" aria-label="Modes d'animation LED">
+                    <button class="led-btn cyan"   id="btn-music"    onclick="ledMode('music')"    aria-label="Mode simulation musique">▶ SIMULATE MUSIC</button>
+                    <button class="led-btn pink"   id="btn-rainbow"  onclick="ledMode('rainbow')"  aria-label="Mode arc-en-ciel">◈ RAINBOW</button>
+                    <button class="led-btn purple" id="btn-lightning" onclick="ledMode('lightning')" aria-label="Mode éclair">⚡ LIGHTNING</button>
+                    <button class="led-btn green"  id="btn-pulse"    onclick="ledMode('pulse')"    aria-label="Mode pulsation">◉ PULSE</button>
+                    <button class="led-btn white"  id="btn-white"    onclick="ledMode('white')"    aria-label="Mode blanc">○ WHITE</button>
+                    <button class="led-btn off"    id="btn-off"      onclick="ledMode('off')"      aria-label="Éteindre toutes les LEDs">■ ALL OFF</button>
                 </div>
             </div>
         </section>
 
-        <!-- SCHEMATICS -->
+        <!-- SCHEMATICS — FIX: better placeholder -->
         <section id="schemas" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : SCHEMATICS</h2>
-            <p>Schéma à venir. Tu peux ajouter ici tes plans de câblage et captures de montage.</p>
+            <div class="placeholder-block">
+                <div class="placeholder-icon">⚡</div>
+                <p class="placeholder-title">SCHÉMA EN COURS DE TRANSMISSION</p>
+                <p class="placeholder-sub">Les plans de câblage et captures de montage seront uploadés prochainement.</p>
+            </div>
         </section>
 
-        <!-- FOOTAGE -->
+        <!-- FOOTAGE — FIX: better placeholder when video missing -->
         <section id="videos" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : FOOTAGE</h2>
             <div class="footage-shell">
                 <span class="footage-label">Unboxing</span>
                 <video class="footage-video" controls preload="metadata" playsinline>
                     <source src="./unboxing.mp4" type="video/mp4">
-                    Votre navigateur ne supporte pas la vidéo HTML5.
                 </video>
                 <p class="footage-caption">Capture d'unboxing du prototype CoreLight. Utilise le lecteur pour lancer, mettre en pause et naviguer dans la vidéo.</p>
             </div>
+            <noscript>
+                <p style="color:var(--text-dim);margin-top:1rem;">La vidéo nécessite JavaScript et un navigateur compatible HTML5.</p>
+            </noscript>
         </section>
 
         <!-- DATALOG -->
         <section id="journal" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : DATALOG</h2>
-            <textarea id="journal-input" placeholder="Ajoute une note de progression..."></textarea>
-            <button id="journal-add">Ajouter</button>
+            <label for="journal-input" class="sr-only">Note de progression</label>
+            <textarea id="journal-input" placeholder="Ajoute une note de progression... (Ctrl+Entrée pour envoyer)" aria-label="Note de progression"></textarea>
+            <button id="journal-add" aria-label="Ajouter l'entrée au journal">Ajouter</button>
             <div id="journal-entries"></div>
         </section>
 
-        <!-- QUERY -->
+        <!-- QUERY — FIX: better placeholder -->
         <section id="faq" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : QUERY</h2>
-            <p>Section FAQ en construction.</p>
+            <div class="placeholder-block">
+                <div class="placeholder-icon">◈</div>
+                <p class="placeholder-title">QUERY DATABASE EN CONSTRUCTION</p>
+                <p class="placeholder-sub">Les questions fréquentes sur le projet CoreLight apparaîtront ici.</p>
+            </div>
         </section>
 
     </main>
 
     <script src="./script.js"></script>
-    
-    <!-- Script du bandeau interactif -->
+
+    <!-- LED strip interactive script -->
     <script>
     (function () {
         const canvas  = document.getElementById('led-strip-canvas');
+        if (!canvas) return;
         const ctx     = canvas.getContext('2d');
         const badge   = document.getElementById('led-mode-badge');
         const NUM     = 30;
@@ -191,7 +222,7 @@
         let modeTimer = null;
         let currentMode = 'manual';
 
-        /* ── Rendu ──────────────────────────────────────────────────── */
+        /* ── Render ────────────────────────────────────────── */
         function drawStrip() {
             const W = canvas.width, H = canvas.height;
             ctx.clearRect(0, 0, W, H);
@@ -210,13 +241,12 @@
                 ctx.strokeStyle = 'rgba(255,255,255,0.12)';
                 ctx.lineWidth   = 1.5;
                 ctx.strokeRect(x, ledY, ledW, ledH);
-                // connecteur PCB en bas
                 ctx.fillStyle = 'rgba(255,255,255,0.07)';
                 ctx.fillRect(x + ledW * 0.3, ledY + ledH, ledW * 0.4, 5);
             }
         }
 
-        /* ── Clic manuel ────────────────────────────────────────────── */
+        /* ── Manual click ──────────────────────────────────── */
         canvas.addEventListener('click', (e) => {
             if (currentMode !== 'manual') return;
             const rect  = canvas.getBoundingClientRect();
@@ -231,7 +261,7 @@
             }
         });
 
-        /* ── Gestionnaire de modes ──────────────────────────────────── */
+        /* ── Mode manager ──────────────────────────────────── */
         function stopMode() {
             clearInterval(modeTimer);
             clearTimeout(modeTimer);
@@ -260,14 +290,18 @@
             setActiveBtnStyle('btn-' + mode);
 
             if (mode === 'off') {
-                leds = Array(NUM).fill('#111111'); drawStrip(); currentMode = 'manual';
+                leds = Array(NUM).fill('#111111');
+                drawStrip();
+                currentMode = 'manual';
                 if (badge) badge.textContent = 'MODE : MANUEL';
                 document.querySelectorAll('.led-btn').forEach(b => b.classList.remove('active-mode'));
                 return;
             }
 
             if (mode === 'white') {
-                leds = Array(NUM).fill('#ffffff'); drawStrip(); return;
+                leds = Array(NUM).fill('#ffffff');
+                drawStrip();
+                return;
             }
 
             if (mode === 'rainbow') {
@@ -304,46 +338,53 @@
                 return;
             }
 
-            // ── MODE LIGHTNING (port de tempete_foudre.py sur les LEDs) ──
             if (mode === 'lightning') {
                 const FLASH_PROB = 0.20;
                 modeTimer = setInterval(() => {
                     const isFlash = Math.random() < FLASH_PROB;
                     if (isFlash) {
-                        // Éclair : 1 à 4 LEDs consécutives allumées en blanc/bleu vif
                         leds = Array(NUM).fill('#060610');
                         const strikeStart = Math.floor(Math.random() * (NUM - 4));
                         const strikeLen   = 1 + Math.floor(Math.random() * 4);
                         for (let s = 0; s < strikeLen; s++) {
                             const idx = strikeStart + s;
                             if (idx < NUM) {
-                                // Alternance halo bleu / cœur blanc comme dans le Python
                                 leds[idx] = Math.random() < 0.5 ? '#ffffff' : 'rgb(100,100,255)';
                             }
                         }
-                        // Bifurcation (20% de chance) : une LED isolée aléatoire
                         if (Math.random() < 0.2) {
                             const branch = Math.floor(Math.random() * NUM);
                             leds[branch] = 'rgba(100,100,255,0.7)';
                         }
-                        // Flash ambiant : toutes les LEDs légèrement allumées (ciel illuminé)
                         for (let k = 0; k < NUM; k++) {
                             if (leds[k] === '#060610')
                                 leds[k] = `rgb(${10+Math.floor(Math.random()*18)},${10+Math.floor(Math.random()*18)},${30+Math.floor(Math.random()*30)})`;
                         }
                     } else {
-                        // Fond nuit entre deux éclairs
                         leds = Array(NUM).fill('#060610');
                     }
                     drawStrip();
-                }, Math.round(1000 / 15));  // 15 fps identique au Python
+                }, Math.round(1000 / 15));
                 return;
             }
         }
 
-        // Expose pour les onclick HTML
-        window.ledMode = ledMode;
+        // FIX: Pause LED animations when tab is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && modeTimer) {
+                stopMode();
+                // Remember mode to restore
+                canvas.dataset.pausedMode = currentMode;
+            } else if (!document.hidden && canvas.dataset.pausedMode) {
+                const mode = canvas.dataset.pausedMode;
+                delete canvas.dataset.pausedMode;
+                if (mode !== 'manual' && mode !== 'off' && mode !== 'white') {
+                    ledMode(mode);
+                }
+            }
+        });
 
+        window.ledMode = ledMode;
         drawStrip();
     })();
     </script>

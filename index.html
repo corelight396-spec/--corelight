@@ -4,63 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="CoreLight : système RGB réactif Arduino – ambiance cyberpunk immersive">
+    <meta property="og:title" content="CoreLight – Neon Protocol">
+    <meta property="og:description" content="Système RGB audio-réactif Arduino – WS2812B, ventilateurs synchronisés, ambiance cyberpunk.">
+    <meta property="og:type" content="website">
     <title>CoreLight – PROTOCOL INITIALIZATION</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <style>
-    /* Responsive mobile adjustments */
+    /* Index-specific responsive tweaks */
     @media (max-width: 600px) {
-        body {
-            font-size: 1.05em;
-            padding: 0;
-            margin: 0;
-        }
         .header {
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5em;
+            padding: 1rem;
         }
-        .logo img {
-            width: 60px;
-            height: auto;
-        }
-        .hero {
-            padding: 0 0.5em;
-        }
-        .subtitle-wrapper {
-            font-size: 1em;
-        }
-        .description {
-            font-size: 1em;
-        }
-        .neon-button {
-            font-size: 1em;
-            padding: 0.7em 1.2em;
-        }
-        .terminal-footer {
-            font-size: 0.95em;
-            padding: 0.7em 0.2em;
-            word-break: break-word;
-        }
+        .logo img { width: 60px; height: auto; }
+        .hero { padding: 1.5rem 0.8em 1rem; }
+        .neon-button { font-size: 1em; padding: 0.7em 1.2em; }
+        .terminal-footer { font-size: 0.95em; padding: 0.7em 0.4em; word-break: break-word; }
     }
     </style>
 </head>
 <body>
 
-    <canvas id="bg-anim" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></canvas>
-    <div class="crt-overlay" style="background:rgba(0,0,0,0.08);"></div>
-    <!-- scanlines supprimé -->
-    <div class="vignette" style="background:radial-gradient(ellipse at center, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.18) 100%);"></div>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
 
-    <header class="header">
+    <canvas id="bg-anim" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;" aria-hidden="true"></canvas>
+    <!-- FIX: Lightened overlays for index page (storm bg needs to show through) -->
+    <div class="crt-overlay" style="background:rgba(0,0,0,0.06);" aria-hidden="true"></div>
+    <div class="vignette" style="background:radial-gradient(ellipse at center, rgba(0,0,0,0.06) 60%, rgba(0,0,0,0.16) 100%);" aria-hidden="true"></div>
+
+    <header class="header" role="banner">
         <div class="logo">
-            <img src="./logo.png" alt="CoreLight" class="logo-glitch">
+            <img src="./logo.png" alt="CoreLight" class="logo-glitch" width="90" height="90">
         </div>
         <div style="margin-left:auto;">
-            <label for="theme-select" style="color:#00f6ff;font-family:'Space Mono',monospace;font-size:1rem;">Thème&nbsp;:</label>
-            <select id="theme-select" style="background:#05000a;color:#00f6ff;border:1.5px solid #00f6ff;border-radius:6px;padding:2px 8px;font-family:'Space Mono',monospace;">
+            <label for="theme-select" style="color:var(--neon-cyan);font-family:'Space Mono',monospace;font-size:0.9rem;">Thème&nbsp;:</label>
+            <select id="theme-select" style="background:var(--bg-darker);color:var(--neon-cyan);border:1.5px solid var(--neon-cyan);border-radius:6px;padding:3px 8px;font-family:'Space Mono',monospace;font-size:0.85rem;">
                 <option value="cyan">Cyan</option>
                 <option value="pink">Rose</option>
                 <option value="green">Vert</option>
@@ -69,11 +52,11 @@
         </div>
     </header>
 
-    <main class="hero">
+    <main class="hero" id="main-content">
         <h1 class="glitch" data-text="CORE_LIGHT">
             CORE_LIGHT
         </h1>
-        
+
         <div class="subtitle-wrapper">
             <p class="subtitle glitch-small" data-text="NEON PROTOCOL v0.7">NEON PROTOCOL v0.7</p>
             <p class="status-line">SYSTEM ONLINE — AWAITING MATRIX ACCESS</p>
@@ -90,99 +73,115 @@
         </a>
     </main>
 
-    <footer class="terminal-footer">
+    <footer class="terminal-footer" role="contentinfo">
         <p>© 2026 CoreLight Industries — Made in Valais<br>
-        <a href="https://www.instagram.com/corelight.rgblabs/?__pwa=1#" target="_blank" rel="noopener noreferrer" style="color:#00f6ff;text-decoration:none;font-family:'Space Mono',monospace;font-size:1.1em;">Instagram : @corelight.rgblabs</a></p>
+        <a href="https://www.instagram.com/corelight.rgblabs/" target="_blank" rel="noopener noreferrer">Instagram : @corelight.rgblabs</a></p>
     </footer>
 
     <script src="./script.js"></script>
-<script>
-// ─── TEMPÊTE FOUDRE – fond pleine page (port de tempete_foudre.py) ────────────
-(function () {
-    const FRAME_MS   = Math.round(1000 / 15);
-    const FLASH_PROB = 0.15;
-    const BG_NIGHT   = 'rgb(10, 10, 25)';
-    const BG_FLASH   = 'rgb(40, 40, 70)';
+    <script>
+    // ─── TEMPÊTE FOUDRE – background animation (ported from tempete_foudre.py) ──
+    (function () {
+        const FRAME_MS   = Math.round(1000 / 15);
+        const FLASH_PROB = 0.15;
+        const BG_NIGHT   = 'rgb(10, 10, 25)';
+        const BG_FLASH   = 'rgb(40, 40, 70)';
 
-    const canvas = document.getElementById('bg-anim');
-    const ctx    = canvas.getContext('2d');
+        const canvas = document.getElementById('bg-anim');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
 
-    function resize() {
-        canvas.width  = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    function generatePath(startX, startY) {
-        const pts = [[startX, startY]];
-        let cx = startX, cy = startY;
-        while (cy < canvas.height) {
-            cy += 10 + Math.floor(Math.random() * 21);
-            cx += Math.floor((Math.random() - 0.5) * 80);
-            pts.push([cx, cy]);
+        function resize() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-        return pts;
-    }
+        resize();
+        window.addEventListener('resize', resize);
 
-    function drawPath(pts, haloColor, coreColor, haloW, coreW) {
-        if (pts.length < 2) return;
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        ctx.strokeStyle = haloColor;
-        ctx.lineWidth = haloW;
-        ctx.moveTo(pts[0][0], pts[0][1]);
-        pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.strokeStyle = coreColor;
-        ctx.lineWidth = coreW;
-        ctx.moveTo(pts[0][0], pts[0][1]);
-        pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
-        ctx.stroke();
-    }
-
-    function drawBranch(fromX, fromY) {
-        const endY = Math.min(canvas.height, fromY + canvas.height * 0.35);
-        const pts  = [[fromX, fromY]];
-        let cx = fromX, cy = fromY;
-        while (cy < endY) {
-            cy += 5 + Math.floor(Math.random() * 16);
-            cx += Math.floor((Math.random() - 0.5) * 50);
-            pts.push([cx, cy]);
+        function generatePath(startX, startY) {
+            const pts = [[startX, startY]];
+            let cx = startX, cy = startY;
+            while (cy < canvas.height) {
+                cy += 10 + Math.floor(Math.random() * 21);
+                cx += Math.floor((Math.random() - 0.5) * 80);
+                pts.push([cx, cy]);
+            }
+            return pts;
         }
-        drawPath(pts, 'rgba(100,100,255,0.45)', 'rgba(255,255,255,0.70)', 3, 1);
-    }
 
-    function renderFrame() {
-        const W = canvas.width, H = canvas.height;
-        const isFlash = Math.random() < FLASH_PROB;
-
-        ctx.fillStyle = isFlash ? BG_FLASH : BG_NIGHT;
-        ctx.fillRect(0, 0, W, H);
-
-        if (isFlash) {
-            const startX = 40 + Math.floor(Math.random() * (W - 80));
-            const pts    = generatePath(startX, 0);
-
-            drawPath(pts, 'rgba(100,100,255,0.85)', 'rgba(255,255,255,1)', 6, 2);
-
-            pts.forEach(([px, py]) => {
-                if (Math.random() < 0.2) drawBranch(px, py);
-            });
-
-            // Glow (simule GaussianBlur radius 0.5)
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.shadowBlur   = 14;
-            ctx.shadowColor  = 'rgba(100,100,255,0.55)';
-            drawPath(pts, 'rgba(100,100,255,0.18)', 'rgba(255,255,255,0.12)', 10, 4);
-            ctx.shadowBlur   = 0;
-            ctx.globalCompositeOperation = 'source-over';
+        function drawPath(pts, haloColor, coreColor, haloW, coreW) {
+            if (pts.length < 2) return;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.strokeStyle = haloColor;
+            ctx.lineWidth = haloW;
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.strokeStyle = coreColor;
+            ctx.lineWidth = coreW;
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+            ctx.stroke();
         }
-    }
 
-    setInterval(renderFrame, FRAME_MS);
-})();
-</script>
+        function drawBranch(fromX, fromY) {
+            const endY = Math.min(canvas.height, fromY + canvas.height * 0.35);
+            const pts  = [[fromX, fromY]];
+            let cx = fromX, cy = fromY;
+            while (cy < endY) {
+                cy += 5 + Math.floor(Math.random() * 16);
+                cx += Math.floor((Math.random() - 0.5) * 50);
+                pts.push([cx, cy]);
+            }
+            drawPath(pts, 'rgba(100,100,255,0.45)', 'rgba(255,255,255,0.70)', 3, 1);
+        }
+
+        // FIX: Pause animation when tab is hidden (saves CPU)
+        let animInterval = null;
+
+        function renderFrame() {
+            const W = canvas.width, H = canvas.height;
+            const isFlash = Math.random() < FLASH_PROB;
+
+            ctx.fillStyle = isFlash ? BG_FLASH : BG_NIGHT;
+            ctx.fillRect(0, 0, W, H);
+
+            if (isFlash) {
+                const startX = 40 + Math.floor(Math.random() * (W - 80));
+                const pts    = generatePath(startX, 0);
+
+                drawPath(pts, 'rgba(100,100,255,0.85)', 'rgba(255,255,255,1)', 6, 2);
+
+                pts.forEach(([px, py]) => {
+                    if (Math.random() < 0.2) drawBranch(px, py);
+                });
+
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.shadowBlur   = 14;
+                ctx.shadowColor  = 'rgba(100,100,255,0.55)';
+                drawPath(pts, 'rgba(100,100,255,0.18)', 'rgba(255,255,255,0.12)', 10, 4);
+                ctx.shadowBlur   = 0;
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        }
+
+        function startAnim() {
+            if (!animInterval) animInterval = setInterval(renderFrame, FRAME_MS);
+        }
+
+        function stopAnim() {
+            clearInterval(animInterval);
+            animInterval = null;
+        }
+
+        startAnim();
+
+        document.addEventListener('visibilitychange', () => {
+            document.hidden ? stopAnim() : startAnim();
+        });
+    })();
+    </script>
 </body>
 </html>

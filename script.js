@@ -1,6 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Gestion des onglets avec transition directionnelle
+    // ═══════════════════════════════════════════════
+    // Utility: debounce
+    // ═══════════════════════════════════════════════
+    function debounce(fn, ms) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), ms);
+        };
+    }
+
+    // ═══════════════════════════════════════════════
+    // Tab navigation with directional transitions
+    // ═══════════════════════════════════════════════
     const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
     const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
     const tabNav = document.querySelector(".terminal-nav");
@@ -23,173 +36,248 @@ document.addEventListener("DOMContentLoaded", () => {
     if (tabNav && tabButtons.length > 0) {
         const initialActiveBtn = tabNav.querySelector(".tab-btn.active") || tabButtons[0];
         if (initialActiveBtn) updateTabIndicator(initialActiveBtn);
-        window.addEventListener("resize", () => {
+        // PERF: debounced resize handler
+        window.addEventListener("resize", debounce(() => {
             const activeBtn = tabNav.querySelector(".tab-btn.active");
             if (activeBtn) updateTabIndicator(activeBtn);
-        });
+        }, 150));
     }
 
+    // ARIA: set up tab/tabpanel roles and connections
+    tabButtons.forEach((btn, i) => {
+        const panelId = btn.dataset.tab;
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("aria-selected", btn.classList.contains("active") ? "true" : "false");
+        btn.setAttribute("aria-controls", panelId);
+        btn.setAttribute("id", `tab-${panelId}`);
+        // Only active tab is in tab order; others reachable via arrow keys
+        btn.setAttribute("tabindex", btn.classList.contains("active") ? "0" : "-1");
+    });
+
+    tabPanels.forEach(panel => {
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", `tab-${panel.id}`);
+        // Hidden panels should not be tabbable
+        if (!panel.classList.contains("active")) {
+            panel.setAttribute("tabindex", "-1");
+        } else {
+            panel.setAttribute("tabindex", "0");
+        }
+    });
+
+    function activateTab(btn) {
+        const next = document.getElementById(btn.dataset.tab);
+        if (!next) return;
+
+        // Mini flash glitch
+        document.body.classList.add("glitch-flash");
+        setTimeout(() => document.body.classList.remove("glitch-flash"), 350);
+
+        if (isTabAnimating) return;
+
+        tabButtons.forEach(b => {
+            b.classList.remove("active");
+            b.setAttribute("aria-selected", "false");
+            b.setAttribute("tabindex", "-1");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        btn.setAttribute("tabindex", "0");
+        btn.focus();
+        updateTabIndicator(btn);
+
+        // Update panel tabindex
+        tabPanels.forEach(p => p.setAttribute("tabindex", "-1"));
+        next.setAttribute("tabindex", "0");
+
+        const current = document.querySelector(".tab-panel.active");
+        if (current === next) return;
+
+        if (!current) {
+            cleanupTabClasses(next);
+            next.classList.add("active");
+            return;
+        }
+
+        const currentIndex = panelIndexById.get(current.id) ?? 0;
+        const nextIndex = panelIndexById.get(next.id) ?? currentIndex;
+        const direction = nextIndex >= currentIndex ? "forward" : "backward";
+
+        isTabAnimating = true;
+        cleanupTabClasses(current);
+        cleanupTabClasses(next);
+
+        current.classList.add(`tab-exit-${direction}`);
+        next.classList.add("active", `tab-enter-${direction}`);
+
+        requestAnimationFrame(() => {
+            next.classList.add("tab-enter-active");
+        });
+
+        setTimeout(() => {
+            current.classList.remove("active");
+            cleanupTabClasses(current);
+            cleanupTabClasses(next);
+            isTabAnimating = false;
+        }, 430);
+    }
+
+    // Click handler
     tabButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const next = document.getElementById(btn.dataset.tab);
-            if (!next) return;
+        btn.addEventListener("click", () => activateTab(btn));
+    });
 
-            // mini flash glitch
-            document.body.classList.add("glitch-flash");
-            setTimeout(() => document.body.classList.remove("glitch-flash"), 350);
+    // A11Y: Keyboard navigation for tabs (Arrow Left/Right, Home, End)
+    if (tabNav) {
+        tabNav.addEventListener("keydown", (e) => {
+            const currentBtn = document.activeElement;
+            if (!tabButtons.includes(currentBtn)) return;
 
-            if (isTabAnimating) return;
+            let idx = tabButtons.indexOf(currentBtn);
+            let newIdx = idx;
 
-            tabButtons.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            updateTabIndicator(btn);
-
-            const current = document.querySelector(".tab-panel.active");
-            if (current === next) return;
-
-            if (!current) {
-                cleanupTabClasses(next);
-                next.classList.add("active");
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault();
+                newIdx = (idx + 1) % tabButtons.length;
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                e.preventDefault();
+                newIdx = (idx - 1 + tabButtons.length) % tabButtons.length;
+            } else if (e.key === "Home") {
+                e.preventDefault();
+                newIdx = 0;
+            } else if (e.key === "End") {
+                e.preventDefault();
+                newIdx = tabButtons.length - 1;
+            } else {
                 return;
             }
 
-            const currentIndex = panelIndexById.get(current.id) ?? 0;
-            const nextIndex = panelIndexById.get(next.id) ?? currentIndex;
-            const direction = nextIndex >= currentIndex ? "forward" : "backward";
-
-            isTabAnimating = true;
-            cleanupTabClasses(current);
-            cleanupTabClasses(next);
-
-            current.classList.add(`tab-exit-${direction}`);
-            next.classList.add("active", `tab-enter-${direction}`);
-
-            requestAnimationFrame(() => {
-                next.classList.add("tab-enter-active");
-            });
-
-            setTimeout(() => {
-                current.classList.remove("active");
-                cleanupTabClasses(current);
-                cleanupTabClasses(next);
-                isTabAnimating = false;
-            }, 430);
+            activateTab(tabButtons[newIdx]);
         });
-    });
+    }
 
-    // Journal simple (localStorage)
+    // ═══════════════════════════════════════════════
+    // Journal (localStorage) — XSS-safe
+    // ═══════════════════════════════════════════════
     const JOURNAL_KEY = "corelight-journal";
     const entriesDiv = document.getElementById("journal-entries");
     const input = document.getElementById("journal-input");
     const addBtn = document.getElementById("journal-add");
 
+    function escapeHTML(str) {
+        const div = document.createElement("div");
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
     function loadJournal() {
-        const data = localStorage.getItem(JOURNAL_KEY);
-        return data ? JSON.parse(data) : [];
+        try {
+            const data = localStorage.getItem(JOURNAL_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch {
+            return [];
+        }
     }
 
     function saveJournal(arr) {
-        localStorage.setItem(JOURNAL_KEY, JSON.stringify(arr.slice(-30))); // garde max 30
+        try {
+            localStorage.setItem(JOURNAL_KEY, JSON.stringify(arr.slice(-30)));
+        } catch {
+            // localStorage full or unavailable
+        }
     }
 
     function renderJournal() {
         if (!entriesDiv) return;
         entriesDiv.innerHTML = "";
-        loadJournal().reverse().forEach(e => {
+        const entries = loadJournal().reverse();
+        if (entries.length === 0) {
+            entriesDiv.innerHTML = '<p style="color:var(--text-dim);opacity:0.5;font-size:0.85rem;margin-top:1rem;">Aucune entrée pour l\'instant.</p>';
+            return;
+        }
+        entries.forEach(e => {
             const d = document.createElement("div");
-            d.innerHTML = `<small>${e.date}</small><br>${e.text.replace(/\n/g, "<br>")}`;
+            const safeDate = escapeHTML(e.date || "");
+            const safeText = escapeHTML(e.text || "").replace(/\n/g, "<br>");
+            d.innerHTML = `<small>${safeDate}</small><br>${safeText}`;
             entriesDiv.appendChild(d);
         });
     }
 
+    function addJournalEntry() {
+        if (!input) return;
+        const text = input.value.trim();
+        if (!text) return;
+        const arr = loadJournal();
+        arr.push({ date: new Date().toLocaleString("fr-CH"), text });
+        saveJournal(arr);
+        input.value = "";
+        renderJournal();
+        input.focus();
+    }
+
     if (addBtn) {
-        addBtn.addEventListener("click", () => {
-            const text = input.value.trim();
-            if (!text) return;
-            const arr = loadJournal();
-            arr.push({ date: new Date().toLocaleString("fr-CH"), text });
-            saveJournal(arr);
-            input.value = "";
-            renderJournal();
+        addBtn.addEventListener("click", addJournalEntry);
+    }
+
+    // A11Y: Ctrl+Enter to submit journal entry
+    if (input) {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                addJournalEntry();
+            }
         });
     }
 
     renderJournal();
 
-    // Petit glitch aléatoire toutes les ~20–40 secondes
-    setInterval(() => {
+    // ═══════════════════════════════════════════════
+    // Random glitch every ~20–40s (pauses when hidden)
+    // ═══════════════════════════════════════════════
+    let glitchInterval = setInterval(() => {
         if (Math.random() > 0.93) {
             document.body.classList.add("glitch-flash");
             setTimeout(() => document.body.classList.remove("glitch-flash"), 400);
         }
     }, 18000);
 
-    // Terminal interactif fictif
-    const terminal = document.getElementById('fake-terminal');
-    const terminalInput = document.getElementById('terminal-input');
-
-    if (terminal && terminalInput) {
-        const PROMPT = '> ';
-        let history = [];
-        let histIdx = 0;
-        const commands = {
-            help: () => 'Commandes: help, about, matrix, clear',
-            about: () => 'CoreLight v0.7\nProjet cyberpunk RGB réactif, Lausanne Node.\nAuteur: Tiago',
-            matrix: () => 'Wake up, Neo...\nThe Matrix has you.\nFollow the white rabbit.',
-            clear: () => { terminal.innerHTML = ''; return ''; }
-        };
-        function print(text) {
-            if (text) terminal.innerHTML += text + '\n';
-            terminal.scrollTop = terminal.scrollHeight;
+    // PERF: Pause random glitch when tab hidden
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            clearInterval(glitchInterval);
+        } else {
+            glitchInterval = setInterval(() => {
+                if (Math.random() > 0.93) {
+                    document.body.classList.add("glitch-flash");
+                    setTimeout(() => document.body.classList.remove("glitch-flash"), 400);
+                }
+            }, 18000);
         }
-        print('Bienvenue dans le terminal CoreLight !\nTape "help" pour la liste des commandes.');
-        terminalInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
-                const val = terminalInput.value.trim();
-                if (!val) return;
-                print(PROMPT + val);
-                history.push(val);
-                histIdx = history.length;
-                if (commands[val]) {
-                    const out = commands[val]();
-                    if (out) print(out);
-                } else {
-                    print('Commande inconnue. Tape "help".');
-                }
-                terminalInput.value = '';
-            } else if (e.key === 'ArrowUp') {
-                if (histIdx > 0) {
-                    histIdx--;
-                    terminalInput.value = history[histIdx] || '';
-                }
-            } else if (e.key === 'ArrowDown') {
-                if (histIdx < history.length - 1) {
-                    histIdx++;
-                    terminalInput.value = history[histIdx] || '';
-                } else {
-                    terminalInput.value = '';
-                }
-            }
-        });
-    }
+    });
 
-    // Effet typewriter sur la ligne SYSTEM ONLINE
+    // ═══════════════════════════════════════════════
+    // Typewriter on SYSTEM ONLINE line (index only)
+    // ═══════════════════════════════════════════════
     const statusLine = document.querySelector('.status-line');
     if (statusLine) {
         const text = statusLine.textContent;
         statusLine.textContent = '';
+        statusLine.setAttribute('aria-label', text); // A11Y: screenreaders get full text immediately
         let i = 0;
         function type() {
             if (i < text.length) {
                 statusLine.textContent += text[i];
                 i++;
-                setTimeout(type, 38 + Math.random()*40);
+                setTimeout(type, 38 + Math.random() * 40);
             }
         }
         setTimeout(type, 600);
     }
 
-    // Effet glitch sur le bouton au survol/clic
+    // ═══════════════════════════════════════════════
+    // Glitch on button hover/click (index only)
+    // ═══════════════════════════════════════════════
     const neonBtn = document.querySelector('.neon-button');
     if (neonBtn) {
         neonBtn.addEventListener('mouseenter', () => {
@@ -202,7 +290,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Personnalisation du thème utilisateur
+    // ═══════════════════════════════════════════════
+    // Theme customization (index only)
+    // ═══════════════════════════════════════════════
     const themeSelect = document.getElementById('theme-select');
     const root = document.documentElement;
     const themes = {
@@ -211,18 +301,21 @@ document.addEventListener("DOMContentLoaded", () => {
         green:  { '--neon-cyan': '#39ff14', '--neon-pink': '#00f6ff', '--neon-green': '#ff2ea5', '--neon-purple': '#d600f9' },
         purple: { '--neon-cyan': '#d600f9', '--neon-pink': '#00f6ff', '--neon-green': '#39ff14', '--neon-purple': '#ff2ea5' }
     };
+
     function applyTheme(theme) {
         if (!themes[theme]) return;
-        Object.entries(themes[theme]).forEach(([k,v]) => root.style.setProperty(k,v));
-        localStorage.setItem('corelight-theme', theme);
+        Object.entries(themes[theme]).forEach(([k, v]) => root.style.setProperty(k, v));
+        try { localStorage.setItem('corelight-theme', theme); } catch {}
     }
+
     if (themeSelect) {
         themeSelect.addEventListener('change', e => applyTheme(e.target.value));
-        // Appliquer le thème sauvegardé
-        const saved = localStorage.getItem('corelight-theme');
-        if (saved && themes[saved]) {
-            themeSelect.value = saved;
-            applyTheme(saved);
-        }
+        try {
+            const saved = localStorage.getItem('corelight-theme');
+            if (saved && themes[saved]) {
+                themeSelect.value = saved;
+                applyTheme(saved);
+            }
+        } catch {}
     }
 });
