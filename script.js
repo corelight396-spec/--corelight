@@ -191,7 +191,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const staticColorInput = document.getElementById("static-color-input");
     const applyStaticColorBtn = document.getElementById("apply-static-color");
     const ledModeButtons = Array.from(document.querySelectorAll(".led-btn[data-led-mode]"));
+    const safeModeToggle = document.getElementById("safe-mode-toggle");
+    const safeModeNotice = document.getElementById("safe-mode-notice");
     const hasSerialUI = !!serialConnectBtn;
+
+    const SAFE_BRIGHTNESS_MAX = 60;
+    const NORMAL_BRIGHTNESS_MAX = 255;
+    const SAFE_POWER_SCALE = 0.4;
+    const NORMAL_POWER_SCALE = 1;
+    const SOFT_START_MS = 800;
+    const SOFT_START_STEPS = 4;
+    const COMMAND_DELAY_MS = 300;
 
     const serialState = {
         port: null,
@@ -206,6 +216,11 @@ document.addEventListener("DOMContentLoaded", () => {
         rpm: null,
         lastTelemetryAt: 0,
         simulationTick: 0,
+        safeMode: true,
+        effectiveBrightness: Number(brightnessSlider?.value || 180),
+        commandQueue: [],
+        queueBusy: false,
+        softStartTimer: null,
     };
 
     const ledModeMap = {
@@ -250,17 +265,82 @@ document.addEventListener("DOMContentLoaded", () => {
             ? "✅ ARDUINO CONNECTED — CLICK TO DISCONNECT"
             : "🔌 CONNECT TO ARDUINO USB";
         serialConnectBtn.setAttribute("aria-pressed", serialState.connected ? "true" : "false");
+
+        if (safeModeToggle) {
+            safeModeToggle.textContent = serialState.safeMode ? "SAFE MODE ON" : "SAFE MODE OFF";
+            safeModeToggle.classList.toggle("connected", serialState.safeMode);
+            safeModeToggle.classList.toggle("disconnected", !serialState.safeMode);
+            safeModeToggle.setAttribute("aria-pressed", serialState.safeMode ? "true" : "false");
+        }
+        if (safeModeNotice) {
+            safeModeNotice.hidden = !serialState.safeMode;
+        }
+
         updateOledPreview();
     }
 
-    async function sendSerialJson(payload) {
-        if (!serialState.connected || !serialState.writer) return;
+    async function flushCommandQueue() {
+        if (!serialState.connected || !serialState.writer || serialState.queueBusy) return;
+        serialState.queueBusy = true;
         try {
-            const line = `${JSON.stringify(payload)}\n`;
-            await serialState.writer.write(new TextEncoder().encode(line));
+            while (serialState.commandQueue.length > 0 && serialState.connected && serialState.writer) {
+                const payload = serialState.commandQueue.shift();
+                const line = `${JSON.stringify(payload)}\n`;
+                await serialState.writer.write(new TextEncoder().encode(line));
+                await new Promise((resolve) => setTimeout(resolve, COMMAND_DELAY_MS));
+            }
         } catch {
             await disconnectSerial();
+        } finally {
+            serialState.queueBusy = false;
         }
+    }
+
+    function queueSerialJson(payload) {
+        if (!serialState.connected || !serialState.writer) return;
+        serialState.commandQueue.push(payload);
+        void flushCommandQueue();
+    }
+
+    function effectiveBrightnessFromRaw(rawValue) {
+        const raw = Number(rawValue) || 0;
+        const max = serialState.safeMode ? SAFE_BRIGHTNESS_MAX : NORMAL_BRIGHTNESS_MAX;
+        return Math.max(0, Math.min(max, raw));
+    }
+
+    function scheduleBrightnessSoftStart(targetRawValue) {
+        const target = effectiveBrightnessFromRaw(targetRawValue);
+        if (serialState.softStartTimer) {
+            clearInterval(serialState.softStartTimer);
+            serialState.softStartTimer = null;
+        }
+        const start = serialState.effectiveBrightness;
+        const delta = target - start;
+        let step = 0;
+        const stepDuration = Math.round(SOFT_START_MS / SOFT_START_STEPS);
+        serialState.softStartTimer = setInterval(() => {
+            step += 1;
+            const value = Math.round(start + (delta * step) / SOFT_START_STEPS);
+            serialState.effectiveBrightness = value;
+            queueSerialJson({
+                cmd: "SET_BRIGHTNESS",
+                value,
+                safeMode: serialState.safeMode,
+                powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
+            });
+            if (step >= SOFT_START_STEPS) {
+                clearInterval(serialState.softStartTimer);
+                serialState.softStartTimer = null;
+            }
+        }, stepDuration);
+    }
+
+    function applySafeModeToBrightnessUi() {
+        if (!brightnessSlider || !brightnessValue) return;
+        brightnessSlider.max = serialState.safeMode ? String(SAFE_BRIGHTNESS_MAX) : String(NORMAL_BRIGHTNESS_MAX);
+        const clamped = effectiveBrightnessFromRaw(brightnessSlider.value);
+        brightnessSlider.value = String(clamped);
+        brightnessValue.textContent = String(clamped);
     }
 
     function applyTelemetry(data) {
@@ -336,16 +416,18 @@ document.addEventListener("DOMContentLoaded", () => {
             serialState.boardLabel = inferBoardLabel(port);
             refreshStatusUi();
 
-            await sendSerialJson({
+            queueSerialJson({
                 cmd: "HELLO",
                 client: "CoreLight Dashboard",
                 expect: ["telemetry", "caps", "mic", "rpm", "temp"],
             });
 
-            await sendSerialJson({
+            queueSerialJson({
                 cmd: "SYNC",
-                brightness: Number(brightnessSlider?.value || 180),
+                brightness: effectiveBrightnessFromRaw(brightnessSlider?.value || serialState.effectiveBrightness),
                 fanSpeed: Number(fanSpeedSlider?.value || 120),
+                safeMode: serialState.safeMode,
+                powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
             });
 
             void readSerialLoop();
@@ -380,6 +462,12 @@ document.addEventListener("DOMContentLoaded", () => {
         serialState.reader = null;
         serialState.writer = null;
         serialState.readBuffer = "";
+        serialState.commandQueue = [];
+        serialState.queueBusy = false;
+        if (serialState.softStartTimer) {
+            clearInterval(serialState.softStartTimer);
+            serialState.softStartTimer = null;
+        }
         serialState.boardLabel = "N/A";
         serialState.mode = "MANUAL";
         refreshStatusUi();
@@ -399,6 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (hasSerialUI) {
+        applySafeModeToBrightnessUi();
         refreshStatusUi();
 
         if (!("serial" in navigator)) {
@@ -427,15 +516,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (brightnessSlider && brightnessValue) {
             brightnessSlider.addEventListener("input", () => {
-                brightnessValue.textContent = brightnessSlider.value;
-                void sendSerialJson({ cmd: "SET_BRIGHTNESS", value: Number(brightnessSlider.value) });
+                const clamped = effectiveBrightnessFromRaw(brightnessSlider.value);
+                brightnessSlider.value = String(clamped);
+                brightnessValue.textContent = String(clamped);
+                scheduleBrightnessSoftStart(clamped);
             });
         }
 
         if (fanSpeedSlider && fanSpeedValue) {
             fanSpeedSlider.addEventListener("input", () => {
                 fanSpeedValue.textContent = fanSpeedSlider.value;
-                void sendSerialJson({ cmd: "SET_FAN_SPEED", value: Number(fanSpeedSlider.value) });
+                queueSerialJson({
+                    cmd: "SET_FAN_SPEED",
+                    value: Number(fanSpeedSlider.value),
+                    safeMode: serialState.safeMode,
+                    powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
+                });
             });
         }
 
@@ -445,7 +541,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const nextOn = !btn.classList.contains("active");
                 btn.classList.toggle("active", nextOn);
                 btn.textContent = `FAN ${fanId} ${nextOn ? "ON" : "OFF"}`;
-                void sendSerialJson({ cmd: "SET_FAN", fan: fanId, on: nextOn });
+                queueSerialJson({
+                    cmd: "SET_FAN",
+                    fan: fanId,
+                    on: nextOn,
+                    safeMode: serialState.safeMode,
+                    powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
+                });
             });
         });
 
@@ -455,7 +557,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const mapped = ledModeMap[mode] || "OFF";
                 serialState.mode = mapped;
                 refreshStatusUi();
-                void sendSerialJson({ cmd: "SET_LED_EFFECT", effect: mapped });
+                queueSerialJson({
+                    cmd: "SET_LED_EFFECT",
+                    effect: mapped,
+                    safeMode: serialState.safeMode,
+                    powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
+                });
             });
         });
 
@@ -464,7 +571,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 const hex = staticColorInput.value || "#00f6ff";
                 serialState.mode = "STATIC_COLOR";
                 refreshStatusUi();
-                void sendSerialJson({ cmd: "SET_LED_EFFECT", effect: "STATIC_COLOR", color: hex });
+                queueSerialJson({
+                    cmd: "SET_LED_EFFECT",
+                    effect: "STATIC_COLOR",
+                    color: hex,
+                    safeMode: serialState.safeMode,
+                    powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
+                });
+            });
+        }
+
+        if (safeModeToggle) {
+            safeModeToggle.addEventListener("click", () => {
+                serialState.safeMode = !serialState.safeMode;
+                applySafeModeToBrightnessUi();
+                refreshStatusUi();
+                scheduleBrightnessSoftStart(brightnessSlider?.value || serialState.effectiveBrightness);
+                queueSerialJson({
+                    cmd: "SET_SAFE_MODE",
+                    enabled: serialState.safeMode,
+                    powerScale: serialState.safeMode ? SAFE_POWER_SCALE : NORMAL_POWER_SCALE,
+                });
             });
         }
 
