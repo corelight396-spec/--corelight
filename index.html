@@ -8,6 +8,7 @@
     <meta property="og:description" content="Système RGB audio-réactif Arduino – WS2812B, ventilateurs synchronisés, ambiance cyberpunk.">
     <meta property="og:type" content="website">
     <title>CoreLight – PROTOCOL INITIALIZATION</title>
+    <link rel="prefetch" href="./dashboard.html">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -15,10 +16,10 @@
 </head>
 <body>
 
-    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    <a href="#main-content" class="skip-link">Passer directement au protocole</a>
 
     <canvas id="bg-anim" class="bg-anim-canvas" aria-hidden="true"></canvas>
-    <!-- FIX: Lightened overlays for index page (storm bg needs to show through) -->
+    <div class="cyber-grid" aria-hidden="true"></div>
     <div class="crt-overlay index-crt-overlay" aria-hidden="true"></div>
     <div class="vignette index-vignette" aria-hidden="true"></div>
 
@@ -37,30 +38,43 @@
         </div>
     </header>
 
-    <main class="hero" id="main-content">
+    <main class="hero gateway-main" id="main-content" tabindex="-1">
         <h1 class="glitch" data-text="CORE_LIGHT">
             CORE_LIGHT
         </h1>
 
-        <div class="subtitle-wrapper">
-            <p class="subtitle glitch-small" data-text="NEON PROTOCOL v0.7">NEON PROTOCOL v0.7</p>
-            <p class="status-line">SYSTEM ONLINE — AWAITING MATRIX ACCESS</p>
+        <div id="gateway-sequence" class="subtitle-wrapper">
+            <p class="subtitle glitch-small typewriter-line" id="line-protocol" data-text="NEON PROTOCOL v0.7" aria-label="NEON PROTOCOL v0.7"></p>
+            <p class="status-line typewriter-line" id="line-system" aria-label="SYSTEM ONLINE — AWAITING MATRIX ACCESS"></p>
         </div>
 
-        <p class="description">
-            Audio-réactif. WS2812B. Ventilateurs synchronisés.<br>
-            Plongez dans la grille néon.
-        </p>
+        <div class="description gateway-description">
+            <p class="typewriter-line" id="line-audio" aria-label="Audio-réactif. WS2812B. Ventilateurs synchronisés."></p>
+            <p class="typewriter-line" id="line-dive" aria-label="Plongez dans la grille néon."></p>
+        </div>
 
-        <a href="./dashboard.html" class="neon-button glitch-button">
+        <p class="welcome-message" id="welcome-message" aria-live="polite">Bienvenue dans le protocole. Prêt à synchroniser ?</p>
+
+        <div class="system-status" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            CONNECTED TO THE GRID
+        </div>
+
+        <a href="./dashboard.html" class="neon-button glitch-button enter-grid-btn" id="enter-grid-btn">
             <span>ENTER THE GRID</span>
             <div class="button-glitch-layer"></div>
+            <div class="button-scanline" aria-hidden="true"></div>
         </a>
     </main>
 
     <footer class="terminal-footer" role="contentinfo">
         <p>© 2026 CoreLight Industries — Made in Valais<br>
         <a href="https://www.instagram.com/corelight.rgblabs/" target="_blank" rel="noopener noreferrer">Instagram : @corelight.rgblabs</a></p>
+        <nav class="gateway-links" aria-label="Liens rapides Gateway">
+            <a href="./dashboard.html?tab=wip">Worklog</a>
+            <span aria-hidden="true">·</span>
+            <a href="./dashboard.html?tab=videos">Unboxing</a>
+        </nav>
     </footer>
 
     <script src="./script.js"></script>

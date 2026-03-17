@@ -131,6 +131,18 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => activateTab(btn));
     });
 
+    // Deep-link support for dashboard tabs (?tab=wip or #videos)
+    if (tabButtons.length > 0 && tabPanels.length > 0) {
+        const params = new URLSearchParams(window.location.search);
+        const tabFromQuery = params.get("tab");
+        const tabFromHash = window.location.hash ? window.location.hash.slice(1) : null;
+        const requestedTab = tabFromQuery || tabFromHash;
+        if (requestedTab) {
+            const targetBtn = tabButtons.find((b) => b.dataset.tab === requestedTab);
+            if (targetBtn) activateTab(targetBtn);
+        }
+    }
+
     // A11Y: Keyboard navigation for tabs (Arrow Left/Right, Home, End)
     if (tabNav) {
         tabNav.addEventListener("keydown", (e) => {
@@ -158,6 +170,305 @@ document.addEventListener("DOMContentLoaded", () => {
 
             activateTab(tabButtons[newIdx]);
         });
+    }
+
+    // ═══════════════════════════════════════════════
+    // Dashboard WebSerial hardware bridge
+    // ═══════════════════════════════════════════════
+    const serialConnectBtn = document.getElementById("serial-connect-btn");
+    const statusLink = document.getElementById("status-link");
+    const statusBoard = document.getElementById("status-board");
+    const statusMode = document.getElementById("status-mode");
+    const statusTemp = document.getElementById("status-temp");
+    const statusRpm = document.getElementById("status-rpm");
+    const statusMic = document.getElementById("status-mic");
+    const oledScreen = document.getElementById("oled-screen");
+    const brightnessSlider = document.getElementById("brightness-slider");
+    const brightnessValue = document.getElementById("brightness-value");
+    const fanSpeedSlider = document.getElementById("fan-speed-slider");
+    const fanSpeedValue = document.getElementById("fan-speed-value");
+    const fanToggles = Array.from(document.querySelectorAll(".fan-toggle"));
+    const staticColorInput = document.getElementById("static-color-input");
+    const applyStaticColorBtn = document.getElementById("apply-static-color");
+    const ledModeButtons = Array.from(document.querySelectorAll(".led-btn[data-led-mode]"));
+    const hasSerialUI = !!serialConnectBtn;
+
+    const serialState = {
+        port: null,
+        reader: null,
+        writer: null,
+        readBuffer: "",
+        connected: false,
+        boardLabel: "N/A",
+        mode: "MANUAL",
+        mic: 0,
+        temp: null,
+        rpm: null,
+        lastTelemetryAt: 0,
+        simulationTick: 0,
+    };
+
+    const ledModeMap = {
+        rainbow: "RAINBOW",
+        pulse: "PULSE",
+        lightning: "LIGHTNING",
+        music: "MUSIC_MODE",
+        white: "STATIC_COLOR",
+        off: "OFF",
+    };
+
+    function inferBoardLabel(port) {
+        const info = port?.getInfo ? port.getInfo() : {};
+        const vendor = info.usbVendorId;
+        if (vendor === 0x2341 || vendor === 0x2A03) return "Arduino Nano";
+        if (vendor === 0x1A86) return "Nano/CH340";
+        if (vendor === 0x0403) return "Nano/FTDI";
+        return "Arduino-compatible";
+    }
+
+    function updateOledPreview() {
+        if (!oledScreen) return;
+        const temp = typeof serialState.temp === "number" ? `${serialState.temp.toFixed(1)} C` : "--.- C";
+        const rpm = typeof serialState.rpm === "number" ? `${Math.round(serialState.rpm)}` : "----";
+        const mic = `${Math.max(0, Math.min(999, Math.round(serialState.mic || 0)))}`.padStart(3, "0");
+        const linkLine = serialState.connected ? "LINK: ONLINE" : "LINK: OFFLINE";
+        oledScreen.textContent = `CORELIGHT v0.8\n${linkLine}\nTEMP: ${temp}\nRPM : ${rpm}\nMIC : ${mic}`;
+    }
+
+    function refreshStatusUi() {
+        if (!hasSerialUI) return;
+        statusLink.textContent = serialState.connected ? "CONNECTED" : "DISCONNECTED";
+        statusBoard.textContent = serialState.boardLabel;
+        statusMode.textContent = serialState.mode;
+        statusTemp.textContent = typeof serialState.temp === "number" ? `${serialState.temp.toFixed(1)} °C` : "-- °C";
+        statusRpm.textContent = typeof serialState.rpm === "number" ? `${Math.round(serialState.rpm)}` : "--";
+        statusMic.textContent = `${Math.round(serialState.mic || 0)}`;
+
+        serialConnectBtn.classList.toggle("connected", serialState.connected);
+        serialConnectBtn.classList.toggle("disconnected", !serialState.connected);
+        serialConnectBtn.textContent = serialState.connected
+            ? "✅ ARDUINO CONNECTED — CLICK TO DISCONNECT"
+            : "🔌 CONNECT TO ARDUINO USB";
+        serialConnectBtn.setAttribute("aria-pressed", serialState.connected ? "true" : "false");
+        updateOledPreview();
+    }
+
+    async function sendSerialJson(payload) {
+        if (!serialState.connected || !serialState.writer) return;
+        try {
+            const line = `${JSON.stringify(payload)}\n`;
+            await serialState.writer.write(new TextEncoder().encode(line));
+        } catch {
+            await disconnectSerial();
+        }
+    }
+
+    function applyTelemetry(data) {
+        serialState.lastTelemetryAt = Date.now();
+        if (typeof data.temp === "number") serialState.temp = data.temp;
+        if (typeof data.rpm === "number") serialState.rpm = data.rpm;
+        if (typeof data.mic === "number") serialState.mic = data.mic;
+        if (typeof data.mode === "string") serialState.mode = data.mode.toUpperCase();
+        if (typeof data.board === "string" && data.board.trim()) {
+            serialState.boardLabel = data.board;
+        }
+        if (typeof data.shield === "string" && data.shield.toLowerCase().includes("gravity")) {
+            serialState.boardLabel = `${serialState.boardLabel} + DFR Gravity`;
+        }
+        refreshStatusUi();
+    }
+
+    function parseSerialLine(line) {
+        const clean = line.trim();
+        if (!clean) return;
+        try {
+            const msg = JSON.parse(clean);
+            if (msg.type === "telemetry" || msg.telemetry) {
+                applyTelemetry(msg.telemetry || msg);
+                return;
+            }
+            if (msg.type === "caps") {
+                if (msg.board) serialState.boardLabel = msg.board;
+                if (msg.shield) serialState.boardLabel = `${serialState.boardLabel} + ${msg.shield}`;
+                refreshStatusUi();
+            }
+        } catch {
+            // Ignore non-JSON lines from serial monitor output
+        }
+    }
+
+    async function readSerialLoop() {
+        if (!serialState.reader) return;
+        try {
+            while (serialState.connected) {
+                const { value, done } = await serialState.reader.read();
+                if (done) break;
+                const chunk = new TextDecoder().decode(value || new Uint8Array());
+                serialState.readBuffer += chunk;
+                const lines = serialState.readBuffer.split("\n");
+                serialState.readBuffer = lines.pop() || "";
+                lines.forEach(parseSerialLine);
+            }
+        } catch {
+            // fallthrough to disconnect
+        }
+        await disconnectSerial();
+    }
+
+    async function connectSerial(port, requestedByUser = false) {
+        if (!hasSerialUI) return;
+        try {
+            if (!port && requestedByUser) {
+                const filters = [
+                    { usbVendorId: 0x2341 }, // Arduino
+                    { usbVendorId: 0x2A03 }, // Arduino
+                    { usbVendorId: 0x1A86 }, // CH340
+                    { usbVendorId: 0x0403 }, // FTDI
+                ];
+                port = await navigator.serial.requestPort({ filters });
+            }
+            if (!port) return;
+            await port.open({ baudRate: 115200 });
+            serialState.port = port;
+            serialState.reader = port.readable.getReader();
+            serialState.writer = port.writable.getWriter();
+            serialState.connected = true;
+            serialState.boardLabel = inferBoardLabel(port);
+            refreshStatusUi();
+
+            await sendSerialJson({
+                cmd: "HELLO",
+                client: "CoreLight Dashboard",
+                expect: ["telemetry", "caps", "mic", "rpm", "temp"],
+            });
+
+            await sendSerialJson({
+                cmd: "SYNC",
+                brightness: Number(brightnessSlider?.value || 180),
+                fanSpeed: Number(fanSpeedSlider?.value || 120),
+            });
+
+            void readSerialLoop();
+        } catch {
+            serialState.connected = false;
+            serialState.boardLabel = "N/A";
+            refreshStatusUi();
+        }
+    }
+
+    async function disconnectSerial() {
+        if (!hasSerialUI) return;
+        serialState.connected = false;
+        try {
+            if (serialState.reader) {
+                await serialState.reader.cancel();
+                serialState.reader.releaseLock();
+            }
+        } catch {}
+        try {
+            if (serialState.writer) {
+                serialState.writer.releaseLock();
+            }
+        } catch {}
+        try {
+            if (serialState.port) {
+                await serialState.port.close();
+            }
+        } catch {}
+
+        serialState.port = null;
+        serialState.reader = null;
+        serialState.writer = null;
+        serialState.readBuffer = "";
+        serialState.boardLabel = "N/A";
+        serialState.mode = "MANUAL";
+        refreshStatusUi();
+    }
+
+    function updateMicSimulation() {
+        if (!hasSerialUI) return;
+        if (!serialState.connected) return;
+        const isTelemetryFresh = Date.now() - serialState.lastTelemetryAt < 1500;
+        if (isTelemetryFresh) return;
+        serialState.simulationTick += 0.24;
+        const wave = 85 + Math.sin(serialState.simulationTick) * 55 + Math.random() * 32;
+        serialState.mic = Math.max(0, Math.min(255, wave));
+        if (typeof serialState.temp !== "number") serialState.temp = 28 + Math.sin(serialState.simulationTick * 0.5) * 1.8;
+        if (typeof serialState.rpm !== "number") serialState.rpm = 820 + serialState.mic * 4.2;
+        refreshStatusUi();
+    }
+
+    if (hasSerialUI) {
+        refreshStatusUi();
+
+        if (!("serial" in navigator)) {
+            serialConnectBtn.disabled = true;
+            serialConnectBtn.textContent = "WEB SERIAL NOT SUPPORTED IN THIS BROWSER";
+            serialConnectBtn.classList.add("disconnected");
+        } else {
+            navigator.serial.getPorts().then((ports) => {
+                if (ports.length > 0) {
+                    void connectSerial(ports[0], false);
+                }
+            }).catch(() => {});
+
+            navigator.serial.addEventListener("disconnect", () => {
+                void disconnectSerial();
+            });
+
+            serialConnectBtn.addEventListener("click", async () => {
+                if (serialState.connected) {
+                    await disconnectSerial();
+                    return;
+                }
+                await connectSerial(null, true);
+            });
+        }
+
+        if (brightnessSlider && brightnessValue) {
+            brightnessSlider.addEventListener("input", () => {
+                brightnessValue.textContent = brightnessSlider.value;
+                void sendSerialJson({ cmd: "SET_BRIGHTNESS", value: Number(brightnessSlider.value) });
+            });
+        }
+
+        if (fanSpeedSlider && fanSpeedValue) {
+            fanSpeedSlider.addEventListener("input", () => {
+                fanSpeedValue.textContent = fanSpeedSlider.value;
+                void sendSerialJson({ cmd: "SET_FAN_SPEED", value: Number(fanSpeedSlider.value) });
+            });
+        }
+
+        fanToggles.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const fanId = Number(btn.dataset.fanId || 0);
+                const nextOn = !btn.classList.contains("active");
+                btn.classList.toggle("active", nextOn);
+                btn.textContent = `FAN ${fanId} ${nextOn ? "ON" : "OFF"}`;
+                void sendSerialJson({ cmd: "SET_FAN", fan: fanId, on: nextOn });
+            });
+        });
+
+        ledModeButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const mode = btn.dataset.ledMode || "off";
+                const mapped = ledModeMap[mode] || "OFF";
+                serialState.mode = mapped;
+                refreshStatusUi();
+                void sendSerialJson({ cmd: "SET_LED_EFFECT", effect: mapped });
+            });
+        });
+
+        if (applyStaticColorBtn && staticColorInput) {
+            applyStaticColorBtn.addEventListener("click", () => {
+                const hex = staticColorInput.value || "#00f6ff";
+                serialState.mode = "STATIC_COLOR";
+                refreshStatusUi();
+                void sendSerialJson({ cmd: "SET_LED_EFFECT", effect: "STATIC_COLOR", color: hex });
+            });
+        }
+
+        setInterval(updateMicSimulation, 320);
     }
 
     // ═══════════════════════════════════════════════
@@ -261,22 +572,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ═══════════════════════════════════════════════
-    // Typewriter on SYSTEM ONLINE line (index only)
+    // Gateway typewriter sequence (index only)
     // ═══════════════════════════════════════════════
-    const statusLine = document.querySelector('.status-line');
-    if (statusLine) {
-        const text = statusLine.textContent;
-        statusLine.textContent = '';
-        statusLine.setAttribute('aria-label', text); // A11Y: screenreaders get full text immediately
-        let i = 0;
-        function type() {
-            if (i < text.length) {
-                statusLine.textContent += text[i];
+    const gatewaySequence = document.getElementById("gateway-sequence");
+    const welcomeMessage = document.getElementById("welcome-message");
+
+    function typeText(el, text, speedMin = 22, speedJitter = 28) {
+        return new Promise((resolve) => {
+            if (!el) return resolve();
+            el.textContent = "";
+            let i = 0;
+            function step() {
+                if (i >= text.length) return resolve();
+                el.textContent += text[i];
                 i++;
-                setTimeout(type, 38 + Math.random() * 40);
+                setTimeout(step, speedMin + Math.random() * speedJitter);
             }
-        }
-        setTimeout(type, 600);
+            step();
+        });
+    }
+
+    async function runGatewayTypewriter() {
+        const protocolLine = document.getElementById("line-protocol");
+        const systemLine = document.getElementById("line-system");
+        const audioLine = document.getElementById("line-audio");
+        const diveLine = document.getElementById("line-dive");
+        if (!protocolLine || !systemLine || !audioLine || !diveLine) return;
+
+        await typeText(protocolLine, "NEON PROTOCOL v0.7");
+        await typeText(systemLine, "SYSTEM ONLINE — AWAITING MATRIX ACCESS");
+        await typeText(audioLine, "Audio-réactif. WS2812B. Ventilateurs synchronisés.");
+        await typeText(diveLine, "Plongez dans la grille néon.");
+
+        if (welcomeMessage) welcomeMessage.classList.add("visible");
+    }
+
+    if (gatewaySequence) {
+        runGatewayTypewriter();
     }
 
     // ═══════════════════════════════════════════════
@@ -291,6 +623,27 @@ document.addEventListener("DOMContentLoaded", () => {
         neonBtn.addEventListener('click', () => {
             neonBtn.classList.add('glitch');
             setTimeout(() => neonBtn.classList.remove('glitch'), 800);
+        });
+    }
+
+    // ═══════════════════════════════════════════════
+    // Smooth transition to dashboard + light preloading
+    // ═══════════════════════════════════════════════
+    const enterGridBtn = document.getElementById("enter-grid-btn");
+    if (enterGridBtn) {
+        const prefetch = document.createElement("link");
+        prefetch.rel = "prefetch";
+        prefetch.href = "./dashboard.html";
+        document.head.appendChild(prefetch);
+
+        enterGridBtn.addEventListener("click", (e) => {
+            const href = enterGridBtn.getAttribute("href");
+            if (!href) return;
+            e.preventDefault();
+            document.body.classList.add("gateway-transition-out");
+            setTimeout(() => {
+                window.location.href = href;
+            }, 220);
         });
     }
 

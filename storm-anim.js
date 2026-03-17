@@ -1,17 +1,29 @@
 (function () {
-    // TEMPETE FOUDRE - background animation (ported from tempete_foudre.py)
+    // TEMPETE NEON + ECLAIRS (lightweight canvas)
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
     const FRAME_MS = Math.round(1000 / 15);
-    const FLASH_PROB = 0.15;
+    const FLASH_PROB = 0.12;
     const BG_NIGHT = "rgb(10, 10, 25)";
     const BG_FLASH = "rgb(40, 40, 70)";
+    const RAIN_COUNT = 26;
 
     const canvas = document.getElementById("bg-anim");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    let rain = [];
 
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        rain = Array.from({ length: RAIN_COUNT }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            len: 35 + Math.random() * 70,
+            speed: 2 + Math.random() * 2.4,
+            alpha: 0.08 + Math.random() * 0.12,
+        }));
     }
     resize();
     window.addEventListener("resize", resize);
@@ -70,6 +82,21 @@
 
         ctx.fillStyle = isFlash ? BG_FLASH : BG_NIGHT;
         ctx.fillRect(0, 0, W, H);
+
+        rain.forEach((r) => {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(0,246,255,${r.alpha})`;
+            ctx.lineWidth = 1;
+            ctx.moveTo(r.x, r.y);
+            ctx.lineTo(r.x - r.len * 0.2, r.y + r.len);
+            ctx.stroke();
+            r.y += r.speed;
+            r.x -= r.speed * 0.2;
+            if (r.y > H + 20 || r.x < -40) {
+                r.x = Math.random() * W + 40;
+                r.y = -20 - Math.random() * 120;
+            }
+        });
 
         if (!isFlash) return;
 

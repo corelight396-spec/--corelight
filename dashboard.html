@@ -27,6 +27,59 @@
         </div>
     </header>
 
+    <section class="serial-hub" aria-label="Arduino hardware control hub">
+        <button id="serial-connect-btn" class="serial-connect-btn disconnected" type="button" aria-live="polite">
+            🔌 CONNECT TO ARDUINO USB
+        </button>
+
+        <div class="system-grid">
+            <article class="system-panel status-panel">
+                <h2 class="system-title">SYSTEM STATUS</h2>
+                <div class="status-kpis">
+                    <p><span>LINK</span><strong id="status-link">DISCONNECTED</strong></p>
+                    <p><span>BOARD</span><strong id="status-board">N/A</strong></p>
+                    <p><span>MODE</span><strong id="status-mode">MANUAL</strong></p>
+                    <p><span>TEMP</span><strong id="status-temp">-- °C</strong></p>
+                    <p><span>RPM</span><strong id="status-rpm">--</strong></p>
+                    <p><span>MIC</span><strong id="status-mic">0</strong></p>
+                </div>
+            </article>
+
+            <article class="system-panel oled-panel">
+                <h2 class="system-title">OLED PREVIEW</h2>
+                <pre id="oled-screen" class="oled-screen">CORELIGHT v0.8
+LINK: OFFLINE
+TEMP: --.- C
+RPM : ----
+MIC : 000</pre>
+            </article>
+
+            <article class="system-panel control-panel">
+                <h2 class="system-title">HARDWARE CONTROL</h2>
+
+                <label class="ctrl-label" for="brightness-slider">Global LED Brightness <span id="brightness-value">180</span></label>
+                <input id="brightness-slider" class="neon-range" type="range" min="0" max="255" value="180">
+
+                <label class="ctrl-label" for="fan-speed-slider">Fan Speed <span id="fan-speed-value">120</span></label>
+                <input id="fan-speed-slider" class="neon-range" type="range" min="0" max="255" value="120">
+
+                <div class="fan-switches" role="group" aria-label="Fan channels">
+                    <button class="fan-toggle active" data-fan-id="1" type="button">FAN 1 ON</button>
+                    <button class="fan-toggle active" data-fan-id="2" type="button">FAN 2 ON</button>
+                    <button class="fan-toggle active" data-fan-id="3" type="button">FAN 3 ON</button>
+                </div>
+
+                <div class="static-color-row">
+                    <label class="ctrl-label" for="static-color-input">Static Color</label>
+                    <div class="color-actions">
+                        <input id="static-color-input" type="color" value="#00f6ff" aria-label="Choisir une couleur statique LED">
+                        <button id="apply-static-color" class="mini-neon-btn" type="button">APPLY</button>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
     <nav class="terminal-nav" role="tablist" aria-label="Dashboard sections">
         <button class="tab-btn active" data-tab="overview">[ OVERVIEW ]</button>
         <button class="tab-btn" data-tab="wip">[ WORKLOG ]</button>
@@ -114,11 +167,19 @@
         <!-- SCHEMATICS — FIX: better placeholder -->
         <section id="schemas" class="tab-panel">
             <h2 class="section-header terminal-header">>>> SECTION : SCHEMATICS</h2>
-            <div class="placeholder-block">
-                <div class="placeholder-icon">⚡</div>
-                <p class="placeholder-title">SCHÉMA EN COURS DE TRANSMISSION</p>
-                <p class="placeholder-sub">Les plans de câblage et captures de montage seront uploadés prochainement.</p>
-            </div>
+            <figure class="schema-shell">
+                <img
+                    src="./schema.jpg"
+                    alt="Schéma de câblage CoreLight avec Arduino, bande LED WS2812B et alimentation"
+                    class="schema-image"
+                    loading="lazy"
+                    width="784"
+                    height="1168"
+                >
+                <figcaption class="schema-caption">
+                    Schéma principal CoreLight — câblage Arduino, WS2812B, alimentation et liaisons de contrôle.
+                </figcaption>
+            </figure>
         </section>
 
         <!-- FOOTAGE — FIX: better placeholder when video missing -->
