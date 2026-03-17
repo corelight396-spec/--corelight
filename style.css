@@ -170,6 +170,267 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   Dashboard components (moved from inline styles)
+   ═══════════════════════════════════════════════ */
+.progress-container {
+    background: rgba(0, 246, 255, 0.1);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 8px;
+    height: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+    box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-purple);
+    transition: width 2.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+    animation: neon-pulse 3s infinite alternate;
+}
+
+@keyframes neon-pulse {
+    from { filter: brightness(1) drop-shadow(0 0 8px var(--neon-cyan)); }
+    to { filter: brightness(1.3) drop-shadow(0 0 25px var(--neon-purple)); }
+}
+
+.hardware-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.hardware-card {
+    position: relative;
+    margin: 0;
+    background: rgba(13, 0, 21, 0.8);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 25px rgba(0, 246, 255, 0.3);
+    transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.hardware-card::before {
+    content: "";
+    position: absolute;
+    top: -120%;
+    left: -45%;
+    width: 55%;
+    height: 320%;
+    background: linear-gradient(120deg, transparent 36%, rgba(255, 255, 255, 0.24) 50%, transparent 64%);
+    transform: rotate(18deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+}
+
+.hardware-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--neon-green);
+    box-shadow: 0 0 24px rgba(0, 246, 255, 0.45), 0 0 38px rgba(57, 255, 20, 0.2);
+}
+
+.hardware-card:hover::before {
+    opacity: 1;
+    animation: hardware-sweep 1.15s ease forwards;
+}
+
+.hardware-card img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.4s ease, filter 0.3s ease;
+}
+
+.hardware-card:hover img {
+    transform: scale(1.04);
+    filter: saturate(1.08) contrast(1.03);
+}
+
+.hardware-card figcaption {
+    padding: 0.7rem 0.9rem 1rem;
+    color: #9beeff;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+@keyframes hardware-sweep {
+    0% { transform: translateX(-130%) rotate(18deg); }
+    100% { transform: translateX(260%) rotate(18deg); }
+}
+
+.ledstrip-shell {
+    background: rgba(5, 0, 10, 0.92);
+    border: 1px solid rgba(0, 246, 255, 0.4);
+    border-radius: 16px;
+    padding: 1.4rem 1rem 1rem;
+    box-shadow: 0 0 36px rgba(0, 246, 255, 0.18);
+}
+
+.ledstrip-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ledstrip-title {
+    color: var(--neon-cyan);
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.ledstrip-mode-badge {
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+    background: rgba(57, 255, 20, 0.1);
+    transition: all 0.2s;
+}
+
+#led-strip-canvas {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    background: #0a0014;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0, 246, 255, 0.5);
+    cursor: crosshair;
+}
+
+.ledstrip-hint {
+    color: #4ecdc4;
+    font-size: 0.82rem;
+    margin: 0.6rem 0 1rem;
+    text-align: center;
+}
+
+.led-btn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+}
+
+.led-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.5rem;
+    border-radius: 9px;
+    border: 1px solid currentColor;
+    background: rgba(0, 0, 0, 0.35);
+    font-family: inherit;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+}
+
+.led-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.led-btn:active {
+    transform: translateY(0);
+}
+
+.led-btn.cyan { color: var(--neon-cyan); }
+.led-btn.cyan:hover { box-shadow: 0 0 10px rgba(0, 246, 255, 0.4); }
+.led-btn.pink { color: var(--neon-pink); }
+.led-btn.pink:hover { box-shadow: 0 0 10px rgba(255, 46, 165, 0.4); }
+.led-btn.green { color: var(--neon-green); }
+.led-btn.green:hover { box-shadow: 0 0 10px rgba(57, 255, 20, 0.4); }
+.led-btn.purple { color: var(--neon-purple); }
+.led-btn.purple:hover { box-shadow: 0 0 10px rgba(214, 0, 249, 0.4); }
+.led-btn.white { color: #ffffff; }
+.led-btn.white:hover { box-shadow: 0 0 10px rgba(255, 255, 255, 0.25); }
+.led-btn.off {
+    color: #556;
+    border-color: #556;
+}
+
+.led-btn.active-mode {
+    background: rgba(255, 255, 255, 0.13);
+    box-shadow: 0 0 14px rgba(0, 246, 255, 0.45);
+}
+
+.footage-shell {
+    position: relative;
+    padding: 1rem;
+    border: 1px solid rgba(0, 246, 255, 0.5);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0, 246, 255, 0.08), rgba(214, 0, 249, 0.08));
+    box-shadow: 0 0 30px rgba(0, 246, 255, 0.18);
+    overflow: hidden;
+}
+
+.footage-shell::before {
+    content: "";
+    position: absolute;
+    inset: -120% auto auto -40%;
+    width: 70%;
+    height: 300%;
+    background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.13) 50%, transparent 65%);
+    transform: rotate(18deg);
+    animation: footage-sweep 4.8s linear infinite;
+    pointer-events: none;
+}
+
+.footage-label {
+    display: inline-block;
+    margin: 0 0 0.9rem;
+    padding: 0.28rem 0.72rem;
+    border: 1px solid var(--neon-green);
+    border-radius: 999px;
+    color: var(--neon-green);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: rgba(57, 255, 20, 0.12);
+}
+
+.footage-video {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--neon-cyan);
+    border-radius: 10px;
+    background: #000;
+    box-shadow: 0 0 18px rgba(0, 246, 255, 0.33), 0 0 38px rgba(214, 0, 249, 0.15);
+}
+
+.footage-caption {
+    margin-top: 0.85rem;
+    color: #b4f7ff;
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+@keyframes footage-sweep {
+    0% { transform: translateX(-120%) rotate(18deg); }
+    100% { transform: translateX(240%) rotate(18deg); }
+}
+
+.video-noscript-note {
+    color: var(--text-dim);
+    margin-top: 1rem;
+}
+
+/* ═══════════════════════════════════════════════
    Index – Hero
    ═══════════════════════════════════════════════ */
 .hero {
@@ -624,6 +885,13 @@ body {
     color: rgba(0,246,255,0.6);
 }
 
+.journal-empty {
+    color: var(--text-dim);
+    opacity: 0.5;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
 /* ═══════════════════════════════════════════════
    Focus & accessibility
    ═══════════════════════════════════════════════ */
@@ -771,6 +1039,26 @@ body.perf-lite #led-strip-canvas {
         font-size: 0.72rem;
         padding: 0.55rem 0.7rem;
     }
+    .footage-shell {
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+    .footage-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+    }
+    .footage-caption {
+        font-size: 0.9rem;
+    }
+    .hardware-card:hover {
+        transform: none;
+    }
+    .hardware-card:hover img {
+        transform: none;
+    }
+    .led-btn-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 800px) {
@@ -785,4 +1073,30 @@ body.perf-lite #led-strip-canvas {
     }
     .logo-glitch { height: 60px; }
     .neon-button { font-size: 1rem; padding: 12px 18px; letter-spacing: 2px; }
+}
+
+/* Index-specific responsive tweaks */
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+        padding: 1rem;
+    }
+    .logo img {
+        width: 60px;
+        height: auto;
+    }
+    .hero {
+        padding: 1.5rem 0.8em 1rem;
+    }
+    .neon-button {
+        font-size: 1em;
+        padding: 0.7em 1.2em;
+    }
+    .terminal-footer {
+        font-size: 0.95em;
+        padding: 0.7em 0.4em;
+        word-break: break-word;
+    }
 }

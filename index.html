@@ -12,21 +12,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
-    <style>
-    /* Index-specific responsive tweaks */
-    @media (max-width: 600px) {
-        .header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5em;
-            padding: 1rem;
-        }
-        .logo img { width: 60px; height: auto; }
-        .hero { padding: 1.5rem 0.8em 1rem; }
-        .neon-button { font-size: 1em; padding: 0.7em 1.2em; }
-        .terminal-footer { font-size: 0.95em; padding: 0.7em 0.4em; word-break: break-word; }
-    }
-    </style>
 </head>
 <body>
 
@@ -79,109 +64,6 @@
     </footer>
 
     <script src="./script.js"></script>
-    <script>
-    // ─── TEMPÊTE FOUDRE – background animation (ported from tempete_foudre.py) ──
-    (function () {
-        const FRAME_MS   = Math.round(1000 / 15);
-        const FLASH_PROB = 0.15;
-        const BG_NIGHT   = 'rgb(10, 10, 25)';
-        const BG_FLASH   = 'rgb(40, 40, 70)';
-
-        const canvas = document.getElementById('bg-anim');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-
-        function resize() {
-            canvas.width  = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        function generatePath(startX, startY) {
-            const pts = [[startX, startY]];
-            let cx = startX, cy = startY;
-            while (cy < canvas.height) {
-                cy += 10 + Math.floor(Math.random() * 21);
-                cx += Math.floor((Math.random() - 0.5) * 80);
-                pts.push([cx, cy]);
-            }
-            return pts;
-        }
-
-        function drawPath(pts, haloColor, coreColor, haloW, coreW) {
-            if (pts.length < 2) return;
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            ctx.strokeStyle = haloColor;
-            ctx.lineWidth = haloW;
-            ctx.moveTo(pts[0][0], pts[0][1]);
-            pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.strokeStyle = coreColor;
-            ctx.lineWidth = coreW;
-            ctx.moveTo(pts[0][0], pts[0][1]);
-            pts.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
-            ctx.stroke();
-        }
-
-        function drawBranch(fromX, fromY) {
-            const endY = Math.min(canvas.height, fromY + canvas.height * 0.35);
-            const pts  = [[fromX, fromY]];
-            let cx = fromX, cy = fromY;
-            while (cy < endY) {
-                cy += 5 + Math.floor(Math.random() * 16);
-                cx += Math.floor((Math.random() - 0.5) * 50);
-                pts.push([cx, cy]);
-            }
-            drawPath(pts, 'rgba(100,100,255,0.45)', 'rgba(255,255,255,0.70)', 3, 1);
-        }
-
-        // FIX: Pause animation when tab is hidden (saves CPU)
-        let animInterval = null;
-
-        function renderFrame() {
-            const W = canvas.width, H = canvas.height;
-            const isFlash = Math.random() < FLASH_PROB;
-
-            ctx.fillStyle = isFlash ? BG_FLASH : BG_NIGHT;
-            ctx.fillRect(0, 0, W, H);
-
-            if (isFlash) {
-                const startX = 40 + Math.floor(Math.random() * (W - 80));
-                const pts    = generatePath(startX, 0);
-
-                drawPath(pts, 'rgba(100,100,255,0.85)', 'rgba(255,255,255,1)', 6, 2);
-
-                pts.forEach(([px, py]) => {
-                    if (Math.random() < 0.2) drawBranch(px, py);
-                });
-
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.shadowBlur   = 14;
-                ctx.shadowColor  = 'rgba(100,100,255,0.55)';
-                drawPath(pts, 'rgba(100,100,255,0.18)', 'rgba(255,255,255,0.12)', 10, 4);
-                ctx.shadowBlur   = 0;
-                ctx.globalCompositeOperation = 'source-over';
-            }
-        }
-
-        function startAnim() {
-            if (!animInterval) animInterval = setInterval(renderFrame, FRAME_MS);
-        }
-
-        function stopAnim() {
-            clearInterval(animInterval);
-            animInterval = null;
-        }
-
-        startAnim();
-
-        document.addEventListener('visibilitychange', () => {
-            document.hidden ? stopAnim() : startAnim();
-        });
-    })();
-    </script>
+    <script src="./storm-anim.js"></script>
 </body>
 </html>

@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         entriesDiv.innerHTML = "";
         const entries = loadJournal().reverse();
         if (entries.length === 0) {
-            entriesDiv.innerHTML = '<p style="color:var(--text-dim);opacity:0.5;font-size:0.85rem;margin-top:1rem;">Aucune entrée pour l\'instant.</p>';
+            entriesDiv.innerHTML = '<p class="journal-empty">Aucune entrée pour l\'instant.</p>';
             return;
         }
         entries.forEach(e => {

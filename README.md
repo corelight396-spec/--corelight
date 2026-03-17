@@ -7,6 +7,7 @@ Système RGB audio-réactif Arduino – WS2812B, ventilateurs synchronisés, amb
 - `index.html` — Page d'accueil avec animation tempête foudre
 - `dashboard.html` — Dashboard avec onglets, LED strip interactif, hardware, journal
 - `script.js` — Logique partagée (onglets, journal, thème, typewriter)
+- `storm-anim.js` — Animation tempête de fond pour `index.html`
 - `style.css` — Styles principaux (thème néon cyberpunk)
 - `logo.png` — Logo CoreLight
 - `prototype1.jpg` — Photo prototype 1
