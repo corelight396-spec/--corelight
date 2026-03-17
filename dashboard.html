@@ -75,7 +75,10 @@
 
     <header class="dashboard-header">
         <h1>CORELIGHT <span class="version">v0.8.1 β</span></h1>
-        <a href="./index.html" class="neon-back">← RETURN TO GATEWAY</a>
+        <div class="header-controls">
+            <button id="perf-toggle" class="perf-toggle" type="button" aria-pressed="false">PERF: OFF</button>
+            <a href="./index.html" class="neon-back">← RETURN TO GATEWAY</a>
+        </div>
     </header>
 
     <nav class="terminal-nav" role="tablist" aria-label="Dashboard sections">
@@ -177,7 +180,7 @@
             <h2 class="section-header terminal-header">>>> SECTION : FOOTAGE</h2>
             <div class="footage-shell">
                 <span class="footage-label">Unboxing</span>
-                <video class="footage-video" controls preload="metadata" playsinline>
+                <video class="footage-video" controls preload="none" playsinline>
                     <source src="./unboxing.mp4" type="video/mp4">
                 </video>
                 <p class="footage-caption">Capture d'unboxing du prototype CoreLight. Utilise le lecteur pour lancer, mettre en pause et naviguer dans la vidéo.</p>

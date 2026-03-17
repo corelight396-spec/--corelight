@@ -20,6 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const panelIndexById = new Map(tabPanels.map((panel, index) => [panel.id, index]));
     let isTabAnimating = false;
 
+    function syncPanelA11y(activePanel) {
+        tabPanels.forEach((panel) => {
+            const isActive = panel === activePanel;
+            panel.hidden = !isActive;
+            panel.setAttribute("aria-hidden", isActive ? "false" : "true");
+            panel.setAttribute("tabindex", isActive ? "0" : "-1");
+        });
+    }
+
     function cleanupTabClasses(panel) {
         panel.classList.remove("tab-enter-forward", "tab-enter-backward", "tab-enter-active", "tab-exit-forward", "tab-exit-backward");
     }
@@ -57,13 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
     tabPanels.forEach(panel => {
         panel.setAttribute("role", "tabpanel");
         panel.setAttribute("aria-labelledby", `tab-${panel.id}`);
-        // Hidden panels should not be tabbable
-        if (!panel.classList.contains("active")) {
-            panel.setAttribute("tabindex", "-1");
-        } else {
-            panel.setAttribute("tabindex", "0");
-        }
+        panel.setAttribute("aria-hidden", panel.classList.contains("active") ? "false" : "true");
     });
+    const initialPanel = document.querySelector(".tab-panel.active");
+    if (initialPanel) syncPanelA11y(initialPanel);
 
     function activateTab(btn) {
         const next = document.getElementById(btn.dataset.tab);
@@ -86,16 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.focus();
         updateTabIndicator(btn);
 
-        // Update panel tabindex
-        tabPanels.forEach(p => p.setAttribute("tabindex", "-1"));
-        next.setAttribute("tabindex", "0");
-
         const current = document.querySelector(".tab-panel.active");
         if (current === next) return;
 
         if (!current) {
             cleanupTabClasses(next);
             next.classList.add("active");
+            syncPanelA11y(next);
             return;
         }
 
@@ -113,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAnimationFrame(() => {
             next.classList.add("tab-enter-active");
         });
+        syncPanelA11y(next);
 
         setTimeout(() => {
             current.classList.remove("active");
@@ -317,5 +321,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 applyTheme(saved);
             }
         } catch {}
+    }
+
+    // ═══════════════════════════════════════════════
+    // Runtime performance mode toggle
+    // ═══════════════════════════════════════════════
+    const PERF_KEY = "corelight-perf-lite";
+    const perfToggle = document.getElementById("perf-toggle");
+
+    function applyPerfMode(enabled) {
+        document.body.classList.toggle("perf-lite", enabled);
+        if (perfToggle) {
+            perfToggle.classList.toggle("is-active", enabled);
+            perfToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+            perfToggle.textContent = enabled ? "PERF: ON" : "PERF: OFF";
+        }
+    }
+
+    try {
+        const savedPerf = localStorage.getItem(PERF_KEY) === "1";
+        applyPerfMode(savedPerf);
+    } catch {
+        applyPerfMode(false);
+    }
+
+    if (perfToggle) {
+        perfToggle.addEventListener("click", () => {
+            const nextEnabled = !document.body.classList.contains("perf-lite");
+            applyPerfMode(nextEnabled);
+            try {
+                localStorage.setItem(PERF_KEY, nextEnabled ? "1" : "0");
+            } catch {}
+        });
     }
 });

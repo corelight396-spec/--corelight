@@ -32,18 +32,18 @@
 
     <a href="#main-content" class="skip-link">Aller au contenu principal</a>
 
-    <canvas id="bg-anim" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;" aria-hidden="true"></canvas>
+    <canvas id="bg-anim" class="bg-anim-canvas" aria-hidden="true"></canvas>
     <!-- FIX: Lightened overlays for index page (storm bg needs to show through) -->
-    <div class="crt-overlay" style="background:rgba(0,0,0,0.06);" aria-hidden="true"></div>
-    <div class="vignette" style="background:radial-gradient(ellipse at center, rgba(0,0,0,0.06) 60%, rgba(0,0,0,0.16) 100%);" aria-hidden="true"></div>
+    <div class="crt-overlay index-crt-overlay" aria-hidden="true"></div>
+    <div class="vignette index-vignette" aria-hidden="true"></div>
 
     <header class="header" role="banner">
         <div class="logo">
             <img src="./logo.png" alt="CoreLight" class="logo-glitch" width="90" height="90">
         </div>
-        <div style="margin-left:auto;">
-            <label for="theme-select" style="color:var(--neon-cyan);font-family:'Space Mono',monospace;font-size:0.9rem;">Thème&nbsp;:</label>
-            <select id="theme-select" style="background:var(--bg-darker);color:var(--neon-cyan);border:1.5px solid var(--neon-cyan);border-radius:6px;padding:3px 8px;font-family:'Space Mono',monospace;font-size:0.85rem;">
+        <div class="theme-wrap">
+            <label for="theme-select" class="theme-label">Thème&nbsp;:</label>
+            <select id="theme-select" class="theme-select">
                 <option value="cyan">Cyan</option>
                 <option value="pink">Rose</option>
                 <option value="green">Vert</option>

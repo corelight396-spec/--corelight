@@ -131,6 +131,44 @@ body {
 
 @keyframes logo-breath { to { filter: drop-shadow(0 0 12px var(--neon-cyan)) drop-shadow(0 0 25px var(--neon-pink)); } }
 
+.bg-anim-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.index-crt-overlay {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.index-vignette {
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.06) 60%, rgba(0, 0, 0, 0.16) 100%);
+}
+
+.theme-wrap {
+    margin-left: auto;
+}
+
+.theme-label {
+    color: var(--neon-cyan);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+}
+
+.theme-select {
+    background: var(--bg-darker);
+    color: var(--neon-cyan);
+    border: 1.5px solid var(--neon-cyan);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+}
+
 /* ═══════════════════════════════════════════════
    Index – Hero
    ═══════════════════════════════════════════════ */
@@ -276,6 +314,34 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(57,255,20,0.2);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.perf-toggle {
+    color: var(--neon-green);
+    background: rgba(57, 255, 20, 0.08);
+    border: 1px solid rgba(57, 255, 20, 0.45);
+    border-radius: 6px;
+    padding: 0.45rem 0.8rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+
+.perf-toggle:hover {
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.32);
+}
+
+.perf-toggle.is-active {
+    color: #001100;
+    background: var(--neon-green);
 }
 
 .dashboard-header h1 {
@@ -585,6 +651,11 @@ select:focus {
     outline-offset: 2px;
 }
 
+.perf-toggle:focus-visible {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+}
+
 /* ── Progress bar a11y ───────────────────────── */
 .progress-container[role="progressbar"] {
     position: relative;
@@ -627,6 +698,41 @@ select:focus {
     .button-glitch-layer { display: none; }
 }
 
+/* Runtime performance mode for constrained devices */
+body.perf-lite .scanlines,
+body.perf-lite .crt-overlay,
+body.perf-lite .footage-shell::before,
+body.perf-lite .hardware-card::before,
+body.perf-lite .glitch::before,
+body.perf-lite .glitch::after,
+body.perf-lite .glitch-small::before,
+body.perf-lite .glitch-small::after {
+    display: none !important;
+    animation: none !important;
+}
+
+body.perf-lite .tab-panel,
+body.perf-lite .tab-btn,
+body.perf-lite .neon-button,
+body.perf-lite .hardware-card,
+body.perf-lite .led-btn,
+body.perf-lite .progress-bar {
+    transition: none !important;
+}
+
+body.perf-lite .logo-glitch,
+body.perf-lite .progress-bar {
+    animation: none !important;
+}
+
+body.perf-lite .tab-panel,
+body.perf-lite .footage-shell,
+body.perf-lite .ledstrip-shell,
+body.perf-lite .hardware-card,
+body.perf-lite #led-strip-canvas {
+    box-shadow: 0 0 10px rgba(0, 246, 255, 0.15) !important;
+}
+
 /* ═══════════════════════════════════════════════
    Glitch flash (tab switch)
    ═══════════════════════════════════════════════ */
@@ -649,6 +755,11 @@ select:focus {
         gap: 1rem;
         text-align: center;
         padding: 1.2rem 1rem;
+    }
+    .header-controls {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
     }
     .terminal-nav {
         justify-content: center;
