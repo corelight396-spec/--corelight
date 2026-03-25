@@ -834,4 +834,96 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch {}
         });
     }
+
+    // ═══════════════════════════════════════════════
+    // Cinematic cursor glow (2026 layer)
+    // Auto-disabled on touch, reduced motion, perf-lite
+    // ═══════════════════════════════════════════════
+    const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isCoarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    let cursorGlowEl = null;
+    let rafPending = false;
+    let targetX = -9999;
+    let targetY = -9999;
+
+    function ensureCursorGlow() {
+        if (cursorGlowEl) return cursorGlowEl;
+        const el = document.createElement("div");
+        el.className = "cursor-glow is-hidden";
+        el.setAttribute("aria-hidden", "true");
+        document.body.appendChild(el);
+        cursorGlowEl = el;
+        return el;
+    }
+
+    function setCursorGlowEnabled(enabled) {
+        if (!cursorGlowEl && !enabled) return;
+        const el = ensureCursorGlow();
+        el.classList.toggle("is-hidden", !enabled);
+        if (!enabled) {
+            el.style.transform = "translate3d(-9999px, -9999px, 0)";
+        }
+    }
+
+    function paintCursorGlow() {
+        rafPending = false;
+        if (!cursorGlowEl) return;
+        // Center glow on pointer
+        cursorGlowEl.style.transform = `translate3d(${Math.round(targetX - 260)}px, ${Math.round(targetY - 260)}px, 0)`;
+    }
+
+    function onPointerMove(e) {
+        targetX = e.clientX;
+        targetY = e.clientY;
+        if (rafPending) return;
+        rafPending = true;
+        requestAnimationFrame(paintCursorGlow);
+    }
+
+    const cinematicAllowed = !prefersReducedMotion && !isCoarsePointer;
+    const cinematicEnabled = cinematicAllowed && !document.body.classList.contains("perf-lite");
+    if (cinematicAllowed) {
+        ensureCursorGlow();
+        setCursorGlowEnabled(cinematicEnabled);
+        window.addEventListener("pointermove", onPointerMove, { passive: true });
+        window.addEventListener("pointerleave", () => setCursorGlowEnabled(false), { passive: true });
+        window.addEventListener("blur", () => setCursorGlowEnabled(false));
+        window.addEventListener("focus", () => {
+            const ok = !document.body.classList.contains("perf-lite");
+            setCursorGlowEnabled(ok);
+        });
+    }
+
+    // Keep cursor glow in sync with PERF toggle
+    if (perfToggle && cinematicAllowed) {
+        const originalApplyPerfMode = applyPerfMode;
+        // Wrap applyPerfMode without changing callers
+        applyPerfMode = (enabled) => {
+            originalApplyPerfMode(enabled);
+            setCursorGlowEnabled(!enabled);
+        };
+    }
+
+    // ═══════════════════════════════════════════════
+    // Reveal-on-scroll (Cyberpunk “panel boot”)
+    // Auto-disabled on reduced motion or perf-lite
+    // ═══════════════════════════════════════════════
+    const revealEls = Array.from(document.querySelectorAll(".reveal"));
+    const revealAllowed = !prefersReducedMotion && !document.body.classList.contains("perf-lite");
+    if (revealEls.length > 0) {
+        if (!revealAllowed) {
+            revealEls.forEach((el) => el.classList.add("is-visible"));
+        } else if ("IntersectionObserver" in window) {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add("is-visible");
+                    io.unobserve(entry.target);
+                });
+            }, { root: null, rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
+            revealEls.forEach((el) => io.observe(el));
+        } else {
+            revealEls.forEach((el) => el.classList.add("is-visible"));
+        }
+    }
 });

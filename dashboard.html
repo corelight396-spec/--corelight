@@ -18,6 +18,8 @@
     <div class="crt-overlay" aria-hidden="true"></div>
     <div class="scanlines" aria-hidden="true"></div>
     <div class="vignette" aria-hidden="true"></div>
+    <div class="mesh-bg" aria-hidden="true"></div>
+    <div class="noise-layer" aria-hidden="true"></div>
 
     <header class="dashboard-header">
         <h1>CORELIGHT <span class="version">v0.8.1 β</span></h1>
@@ -27,7 +29,7 @@
         </div>
     </header>
 
-    <section class="hud-mast" aria-label="CoreLight HUD">
+    <section class="hud-mast hud-frame" aria-label="CoreLight HUD">
         <div class="hud-mast-inner">
             <div class="hud-brand">
                 <img class="hud-logo" src="./logo.png" alt="Logo CoreLight" width="72" height="72" loading="eager">
@@ -38,17 +40,17 @@
             </div>
 
             <div class="hud-kpis" role="list" aria-label="HUD metrics">
-                <article class="hud-kpi" role="listitem" aria-label="Build status">
+                <article class="hud-kpi hud-panel" role="listitem" aria-label="Build status">
                     <p class="hud-kpi-label">BUILD</p>
                     <p class="hud-kpi-value">STABLE</p>
                     <p class="hud-kpi-sub">v0.8.1 · β channel</p>
                 </article>
-                <article class="hud-kpi" role="listitem" aria-label="Design profile">
+                <article class="hud-kpi hud-panel" role="listitem" aria-label="Design profile">
                     <p class="hud-kpi-label">PROFILE</p>
                     <p class="hud-kpi-value">NEON HUD</p>
                     <p class="hud-kpi-sub">CRT · scanlines · glow</p>
                 </article>
-                <article class="hud-kpi" role="listitem" aria-label="Runtime mode">
+                <article class="hud-kpi hud-panel" role="listitem" aria-label="Runtime mode">
                     <p class="hud-kpi-label">RUNTIME</p>
                     <p class="hud-kpi-value">SMOOTH</p>
                     <p class="hud-kpi-sub">Toggle PERF si besoin</p>
@@ -72,7 +74,7 @@
     <main class="tab-content" id="main-content">
 
         <!-- OVERVIEW -->
-        <section id="overview" class="tab-panel active">
+        <section id="overview" class="tab-panel active reveal">
             <h2 class="section-header terminal-header">>>> SECTION : OVERVIEW</h2>
             <p>CoreLight est un système RGB réactif basé sur Arduino.</p>
             <ul>
@@ -84,7 +86,7 @@
         </section>
 
         <!-- WORKLOG -->
-        <section id="wip" class="tab-panel">
+        <section id="wip" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : WORKLOG</h2>
             <div class="task">Arduino + WS2812B</div>
             <div class="progress-container" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-label="Arduino + WS2812B : 85%"><div class="progress-bar" style="width:85%"></div></div>
@@ -97,7 +99,7 @@
         </section>
 
         <!-- CHECKPOINTS -->
-        <section id="objectives" class="tab-panel">
+        <section id="objectives" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : CHECKPOINTS</h2>
             <div class="checkpoint ok">[ OK ] Alim 5V stable</div>
             <div class="checkpoint ok">[ OK ] Première boucle FastLED</div>
@@ -106,7 +108,7 @@
         </section>
 
         <!-- HARDWARE -->
-        <section id="hardware" class="tab-panel">
+        <section id="hardware" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : HARDWARE PROTOTYPE</h2>
             <div class="hardware-grid">
                 <figure class="hardware-card">
@@ -121,7 +123,7 @@
         </section>
 
         <!-- LED STRIP -->
-        <section id="ledstrip" class="tab-panel">
+        <section id="ledstrip" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> BANDEAU WS2812B – 30 LEDs</h2>
             <div class="ledstrip-shell">
                 <div class="ledstrip-meta">
@@ -142,7 +144,7 @@
         </section>
 
         <!-- SCHEMATICS — FIX: better placeholder -->
-        <section id="schemas" class="tab-panel">
+        <section id="schemas" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : SCHEMATICS</h2>
             <figure class="schema-shell">
                 <img
@@ -160,7 +162,7 @@
         </section>
 
         <!-- FOOTAGE — FIX: better placeholder when video missing -->
-        <section id="videos" class="tab-panel">
+        <section id="videos" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : FOOTAGE</h2>
             <div class="footage-shell">
                 <span class="footage-label">Unboxing</span>
@@ -175,7 +177,7 @@
         </section>
 
         <!-- DATALOG -->
-        <section id="journal" class="tab-panel">
+        <section id="journal" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : DATALOG</h2>
             <label for="journal-input" class="sr-only">Note de progression</label>
             <textarea id="journal-input" placeholder="Ajoute une note de progression... (Ctrl+Entrée pour envoyer)" aria-label="Note de progression"></textarea>
@@ -184,7 +186,7 @@
         </section>
 
         <!-- QUERY — FIX: better placeholder -->
-        <section id="faq" class="tab-panel">
+        <section id="faq" class="tab-panel reveal">
             <h2 class="section-header terminal-header">>>> SECTION : QUERY</h2>
             <div class="placeholder-block">
                 <div class="placeholder-icon">◈</div>
