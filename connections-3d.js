@@ -1,6 +1,6 @@
 (function () {
     // Hologram connection schema (pseudo-3D on Canvas2D)
-    // Auto-disabled on reduced motion, coarse pointer, perf-lite.
+    // Auto-disabled on reduced motion, coarse pointer.
     const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const isCoarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
     if (prefersReducedMotion || isCoarsePointer) return;
@@ -52,9 +52,9 @@
     function rand(min, max) { return min + Math.random() * (max - min); }
 
     function resize() {
-        const rect = canvas.getBoundingClientRect();
-        W = Math.max(1, Math.floor(rect.width));
-        H = Math.max(1, Math.floor(rect.height));
+        // Use viewport sizing to avoid “0x0 rect” on some browsers at startup
+        W = Math.max(1, Math.floor(window.innerWidth || 1));
+        H = Math.max(1, Math.floor(window.innerHeight || 1));
         canvas.width = Math.floor(W * DPR);
         canvas.height = Math.floor(H * DPR);
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -338,17 +338,13 @@
         ctx.shadowBlur = 0;
     }
 
-    // Init sizing / layout: canvas sits in hero area, but full-screen for depth.
-    function ensureCanvasSize() {
-        // We render full viewport, but allow CSS to control layout.
-        canvas.style.width = "100vw";
-        canvas.style.height = "100vh";
-        resize();
-    }
-
-    ensureCanvasSize();
+    // Init sizing / layout: full viewport hologram
+    canvas.style.width = "100vw";
+    canvas.style.height = "100vh";
+    resize();
     rebuild();
-    raf = requestAnimationFrame(tick);
+    let running = !document.body.classList.contains("perf-lite");
+    if (running) raf = requestAnimationFrame(tick);
 
     // Interaction: hover + click lock
     function updatePointerFromEvent(e) {
@@ -369,13 +365,10 @@
         locked = locked === hovered ? -1 : hovered;
     }, { passive: true });
 
-    const onResize = () => {
-        ensureCanvasSize();
-    };
+    const onResize = () => resize();
     window.addEventListener("resize", onResize, { passive: true });
 
     // Pause when PERF is toggled on/off (observe body class)
-    let running = true;
     function stop() {
         if (!running) return;
         running = false;
