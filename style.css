@@ -974,6 +974,126 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   Dashboard – HUD mast (design-only / no hardware)
+   ═══════════════════════════════════════════════ */
+.hud-mast {
+    max-width: 1100px;
+    margin: 1.2rem auto 0.6rem;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.hud-mast-inner {
+    border-radius: 18px;
+    padding: 1.1rem 1.1rem;
+    background:
+        linear-gradient(180deg, rgba(0, 246, 255, 0.10), rgba(214, 0, 249, 0.06)),
+        rgba(5, 0, 10, 0.72);
+    border: 1px solid rgba(0, 246, 255, 0.28);
+    box-shadow:
+        0 0 28px rgba(0, 246, 255, 0.14),
+        0 0 55px rgba(214, 0, 249, 0.06);
+    overflow: hidden;
+    position: relative;
+}
+
+.hud-mast-inner::before {
+    content: "";
+    position: absolute;
+    inset: -140% auto auto -30%;
+    width: 65%;
+    height: 340%;
+    background: linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.12) 50%, transparent 65%);
+    transform: rotate(18deg);
+    animation: hud-sweep 7.2s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes hud-sweep {
+    0% { transform: translateX(-140%) rotate(18deg); }
+    100% { transform: translateX(240%) rotate(18deg); }
+}
+
+.hud-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.hud-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(0, 246, 255, 0.22);
+    box-shadow: 0 0 16px rgba(0, 246, 255, 0.18);
+}
+
+.hud-brand-text {
+    flex: 1;
+    min-width: 240px;
+}
+
+.hud-eyebrow {
+    color: var(--neon-cyan);
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.95;
+}
+
+.hud-tagline {
+    margin-top: 0.35rem;
+    font-family: 'Inter', sans-serif;
+    color: rgba(224, 247, 255, 0.80);
+    line-height: 1.55;
+    max-width: 64ch;
+}
+
+.hud-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.hud-kpi {
+    border-radius: 14px;
+    padding: 0.85rem 0.9rem;
+    background: rgba(8, 0, 14, 0.62);
+    border: 1px solid rgba(0, 246, 255, 0.18);
+    box-shadow: 0 0 16px rgba(0, 246, 255, 0.08);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.hud-kpi-label {
+    color: rgba(160, 212, 240, 0.70);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.hud-kpi-value {
+    margin-top: 0.35rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    color: #eaffff;
+    text-shadow: 0 0 12px rgba(0, 246, 255, 0.22);
+}
+
+.hud-kpi-sub {
+    margin-top: 0.25rem;
+    font-family: 'Inter', sans-serif;
+    color: rgba(160, 212, 240, 0.62);
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+/* ═══════════════════════════════════════════════
    Dashboard – Tab Navigation
    ═══════════════════════════════════════════════ */
 .terminal-nav {
@@ -1333,6 +1453,7 @@ select:focus {
     .progress-bar { animation: none; }
     .footage-shell::before { animation: none; }
     .hardware-card::before { animation: none; }
+    .hud-mast-inner::before { animation: none; display: none; }
     .neon-button { transition: none; }
     .button-glitch-layer { display: none; }
 }
@@ -1412,6 +1533,9 @@ body.perf-lite #led-strip-canvas {
     .serial-hub {
         margin-top: 0.7rem;
         padding: 0 0.7rem;
+    }
+    .hud-kpis {
+        grid-template-columns: 1fr;
     }
     .system-grid {
         grid-template-columns: 1fr;

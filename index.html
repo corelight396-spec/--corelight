@@ -2,82 +2,79 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="CoreLight : système RGB réactif Arduino – ambiance cyberpunk immersive">
-    <meta property="og:title" content="CoreLight – Neon Protocol">
-    <meta property="og:description" content="Système RGB audio-réactif Arduino – WS2812B, ventilateurs synchronisés, ambiance cyberpunk.">
-    <meta property="og:type" content="website">
-    <title>CoreLight – PROTOCOL INITIALIZATION</title>
-    <link rel="prefetch" href="./dashboard.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CoreLight – Gateway néon cyberpunk">
+    <title>CoreLight – Gateway</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-
-    <a href="#main-content" class="skip-link">Passer directement au protocole</a>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
 
     <canvas id="bg-anim" class="bg-anim-canvas" aria-hidden="true"></canvas>
     <div class="cyber-grid" aria-hidden="true"></div>
     <div class="crt-overlay index-crt-overlay" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
     <div class="vignette index-vignette" aria-hidden="true"></div>
 
-    <header class="header" role="banner">
-        <div class="logo">
-            <img src="./logo.png" alt="CoreLight" class="logo-glitch" width="90" height="90">
-        </div>
+    <header class="header">
+        <img src="./logo.png" alt="CoreLight" class="logo-glitch" width="90" height="90" loading="eager">
         <div class="theme-wrap">
-            <label for="theme-select" class="theme-label">Thème&nbsp;:</label>
-            <select id="theme-select" class="theme-select">
-                <option value="cyan">Cyan</option>
-                <option value="pink">Rose</option>
-                <option value="green">Vert</option>
-                <option value="purple">Violet</option>
+            <label class="theme-label" for="theme-select">THEME</label>
+            <select class="theme-select" id="theme-select" aria-label="Choisir un thème">
+                <option value="cyan">CYAN</option>
+                <option value="pink">PINK</option>
+                <option value="green">GREEN</option>
+                <option value="purple">PURPLE</option>
             </select>
         </div>
     </header>
 
-    <main class="hero gateway-main" id="main-content" tabindex="-1">
-        <h1 class="glitch" data-text="CORE_LIGHT">
-            CORE_LIGHT
-        </h1>
+    <main class="hero" id="main-content">
+        <section class="gateway-main" aria-label="Gateway">
+            <h1 class="glitch" data-text="CORELIGHT">CORELIGHT</h1>
 
-        <div id="gateway-sequence" class="subtitle-wrapper">
-            <p class="subtitle glitch-small typewriter-line" id="line-protocol" data-text="NEON PROTOCOL v0.7" aria-label="NEON PROTOCOL v0.7"></p>
-            <p class="status-line typewriter-line" id="line-system" aria-label="SYSTEM ONLINE — AWAITING MATRIX ACCESS"></p>
-        </div>
+            <div class="subtitle-wrapper gateway-description">
+                <p class="subtitle">NEON GATEWAY · SYSTEM READY</p>
+                <div id="gateway-sequence" class="status-line" aria-live="polite">
+                    <span id="line-protocol" class="typewriter-line"></span>
+                    <span id="line-system" class="typewriter-line"></span>
+                    <span id="line-audio" class="typewriter-line"></span>
+                    <span id="line-dive" class="typewriter-line"></span>
+                </div>
+                <p id="welcome-message" class="welcome-message">
+                    Accès autorisé. Entrez dans l’interface et explorez le projet.
+                </p>
+            </div>
 
-        <div class="description gateway-description">
-            <p class="typewriter-line" id="line-audio" aria-label="Audio-réactif. WS2812B. Ventilateurs synchronisés."></p>
-            <p class="typewriter-line" id="line-dive" aria-label="Plongez dans la grille néon."></p>
-        </div>
+            <div class="system-status" aria-label="System status">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span>ONLINE · VISUAL MODE</span>
+            </div>
 
-        <p class="welcome-message" id="welcome-message" aria-live="polite">Bienvenue dans le protocole. Prêt à synchroniser ?</p>
+            <a id="enter-grid-btn" class="neon-button enter-grid-btn" href="./dashboard.html">
+                ENTER THE GRID
+                <span class="button-glitch-layer" aria-hidden="true"></span>
+                <span class="button-scanline" aria-hidden="true"></span>
+            </a>
 
-        <div class="system-status" role="status" aria-live="polite">
-            <span class="status-dot" aria-hidden="true"></span>
-            CONNECTED TO THE GRID
-        </div>
-
-        <a href="./dashboard.html" class="neon-button glitch-button enter-grid-btn" id="enter-grid-btn">
-            <span>ENTER THE GRID</span>
-            <div class="button-glitch-layer"></div>
-            <div class="button-scanline" aria-hidden="true"></div>
-        </a>
+            <p class="description">
+                Une interface néon pensée comme un HUD: documentation, médias, schémas, et simulation visuelle.
+                Objectif: un design iconique, fluide et lisible — même sous lumière RGB.
+            </p>
+        </section>
     </main>
 
     <footer class="terminal-footer" role="contentinfo">
-        <p>© 2026 CoreLight Industries — Made in Valais<br>
-        <a href="https://www.instagram.com/corelight.rgblabs/" target="_blank" rel="noopener noreferrer">Instagram : @corelight.rgblabs</a></p>
-        <nav class="gateway-links" aria-label="Liens rapides Gateway">
-            <a href="./dashboard.html?tab=wip">Worklog</a>
-            <span aria-hidden="true">·</span>
-            <a href="./dashboard.html?tab=videos">Unboxing</a>
-        </nav>
+        <p>
+            CoreLight · Cyberpunk UI · <a href="./dashboard.html">Dashboard</a>
+        </p>
     </footer>
 
-    <script src="./script.js"></script>
     <script src="./storm-anim.js"></script>
+    <script src="./script.js"></script>
 </body>
 </html>
+

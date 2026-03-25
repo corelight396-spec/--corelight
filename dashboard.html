@@ -27,60 +27,33 @@
         </div>
     </header>
 
-    <section class="serial-hub" aria-label="Arduino hardware control hub">
-        <button id="serial-connect-btn" class="serial-connect-btn disconnected" type="button" aria-live="polite">
-            🔌 CONNECT TO ARDUINO USB
-        </button>
-        <button id="safe-mode-toggle" class="serial-connect-btn connected" type="button" aria-pressed="true">
-            SAFE MODE ON
-        </button>
-        <p id="safe-mode-notice" class="checkpoint ok" role="status">SAFE MODE actif – Arduino protégé</p>
-
-        <div class="system-grid">
-            <article class="system-panel status-panel">
-                <h2 class="system-title">SYSTEM STATUS</h2>
-                <div class="status-kpis">
-                    <p><span>LINK</span><strong id="status-link">DISCONNECTED</strong></p>
-                    <p><span>BOARD</span><strong id="status-board">N/A</strong></p>
-                    <p><span>MODE</span><strong id="status-mode">MANUAL</strong></p>
-                    <p><span>TEMP</span><strong id="status-temp">-- °C</strong></p>
-                    <p><span>RPM</span><strong id="status-rpm">--</strong></p>
-                    <p><span>MIC</span><strong id="status-mic">0</strong></p>
+    <section class="hud-mast" aria-label="CoreLight HUD">
+        <div class="hud-mast-inner">
+            <div class="hud-brand">
+                <img class="hud-logo" src="./logo.png" alt="Logo CoreLight" width="72" height="72" loading="eager">
+                <div class="hud-brand-text">
+                    <p class="hud-eyebrow">NEON SYSTEM INTERFACE</p>
+                    <p class="hud-tagline">Un dashboard cyberpunk pour documenter, simuler et piloter des idées lumineuses.</p>
                 </div>
-            </article>
+            </div>
 
-            <article class="system-panel oled-panel">
-                <h2 class="system-title">OLED PREVIEW</h2>
-                <pre id="oled-screen" class="oled-screen">CORELIGHT v0.8
-LINK: OFFLINE
-TEMP: --.- C
-RPM : ----
-MIC : 000</pre>
-            </article>
-
-            <article class="system-panel control-panel">
-                <h2 class="system-title">HARDWARE CONTROL</h2>
-
-                <label class="ctrl-label" for="brightness-slider">Global LED Brightness <span id="brightness-value">180</span></label>
-                <input id="brightness-slider" class="neon-range" type="range" min="0" max="255" value="180">
-
-                <label class="ctrl-label" for="fan-speed-slider">Fan Speed <span id="fan-speed-value">120</span></label>
-                <input id="fan-speed-slider" class="neon-range" type="range" min="0" max="255" value="120">
-
-                <div class="fan-switches" role="group" aria-label="Fan channels">
-                    <button class="fan-toggle active" data-fan-id="1" type="button">FAN 1 ON</button>
-                    <button class="fan-toggle active" data-fan-id="2" type="button">FAN 2 ON</button>
-                    <button class="fan-toggle active" data-fan-id="3" type="button">FAN 3 ON</button>
-                </div>
-
-                <div class="static-color-row">
-                    <label class="ctrl-label" for="static-color-input">Static Color</label>
-                    <div class="color-actions">
-                        <input id="static-color-input" type="color" value="#00f6ff" aria-label="Choisir une couleur statique LED">
-                        <button id="apply-static-color" class="mini-neon-btn" type="button">APPLY</button>
-                    </div>
-                </div>
-            </article>
+            <div class="hud-kpis" role="list" aria-label="HUD metrics">
+                <article class="hud-kpi" role="listitem" aria-label="Build status">
+                    <p class="hud-kpi-label">BUILD</p>
+                    <p class="hud-kpi-value">STABLE</p>
+                    <p class="hud-kpi-sub">v0.8.1 · β channel</p>
+                </article>
+                <article class="hud-kpi" role="listitem" aria-label="Design profile">
+                    <p class="hud-kpi-label">PROFILE</p>
+                    <p class="hud-kpi-value">NEON HUD</p>
+                    <p class="hud-kpi-sub">CRT · scanlines · glow</p>
+                </article>
+                <article class="hud-kpi" role="listitem" aria-label="Runtime mode">
+                    <p class="hud-kpi-label">RUNTIME</p>
+                    <p class="hud-kpi-value">SMOOTH</p>
+                    <p class="hud-kpi-sub">Toggle PERF si besoin</p>
+                </article>
+            </div>
         </div>
     </section>
 
