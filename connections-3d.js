@@ -11,13 +11,22 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const DPR = Math.min(2, window.devicePixelRatio || 1);
+    const PERF = {
+        targetFps: 24,
+        maxDpr: 1.5,
+        autoDowngradeAfterFrames: 40,
+        slowFrameMs: 28,
+        minNodeCount: 18,
+        minLinkCount: 22,
+    };
+
+    const DPR = Math.min(PERF.maxDpr, window.devicePixelRatio || 1);
     let W = 0;
     let H = 0;
 
     const CONFIG = {
-        nodeCount: 46,
-        linkCount: 78,
+        nodeCount: 34,
+        linkCount: 52,
         depth: 1.0,
         fov: 1.25,
         centerBias: 0.55,
@@ -144,6 +153,10 @@
     let t0 = performance.now();
     let raf = 0;
     let lastPaletteSyncAt = 0;
+    let lastRenderAt = 0;
+    const frameMs = Math.round(1000 / PERF.targetFps);
+    let slowFrames = 0;
+    let qualityLevel = 0; // 0 = full, 1 = lighter, 2 = minimal
 
     // Interaction: hover focus + click lock
     let pointer = { x: -9999, y: -9999, inside: false };
@@ -211,6 +224,9 @@
 
     function tick(now) {
         raf = requestAnimationFrame(tick);
+        // FPS cap for thermals
+        if (now - lastRenderAt < frameMs) return;
+        lastRenderAt = now;
         const dt = clamp(now - t0, 0, 32);
         t0 = now;
 
@@ -218,6 +234,30 @@
         if (now - lastPaletteSyncAt > 1000) {
             syncPaletteFromCss();
             lastPaletteSyncAt = now;
+        }
+
+        // Auto-downgrade if slow for sustained frames
+        if (dt > PERF.slowFrameMs) slowFrames += 1;
+        else slowFrames = Math.max(0, slowFrames - 1);
+        if (slowFrames > PERF.autoDowngradeAfterFrames) {
+            slowFrames = 0;
+            if (qualityLevel === 0) {
+                qualityLevel = 1;
+                CONFIG.nodeCount = Math.max(PERF.minNodeCount, Math.round(CONFIG.nodeCount * 0.75));
+                CONFIG.linkCount = Math.max(PERF.minLinkCount, Math.round(CONFIG.linkCount * 0.7));
+                CONFIG.maxAlpha = Math.min(CONFIG.maxAlpha, 0.52);
+                rebuild();
+            } else if (qualityLevel === 1) {
+                qualityLevel = 2;
+                CONFIG.nodeCount = Math.max(PERF.minNodeCount, Math.round(CONFIG.nodeCount * 0.75));
+                CONFIG.linkCount = Math.max(PERF.minLinkCount, Math.round(CONFIG.linkCount * 0.75));
+                CONFIG.maxAlpha = Math.min(CONFIG.maxAlpha, 0.42);
+                rebuild();
+            } else {
+                // still slow: stop to protect machine
+                stop();
+                return;
+            }
         }
 
         // Clear with very subtle fade for trails
@@ -280,7 +320,8 @@
             const focused = linkFocused(l);
             const a2 = focused ? clamp(alpha * 1.9, 0, 1) : alpha;
 
-            ctx.shadowBlur = 14;
+            // Shadow blur is expensive: keep it low, boost only on focus
+            ctx.shadowBlur = focused ? 10 : 0;
             ctx.shadowColor = `rgba(${mid.r},${mid.g},${mid.b},${a2})`;
 
             ctx.strokeStyle = `rgba(${mid.r},${mid.g},${mid.b},${a2})`;
@@ -308,7 +349,7 @@
             const fade = clamp(1.15 - p.z * 0.36, 0.12, 1);
             const r = lerp(1.2, 4.2, clamp(p.s * 1.2, 0, 1));
 
-            ctx.shadowBlur = 18;
+            ctx.shadowBlur = isFocused(i) ? 14 : 6;
             const col = palette[n.colorIndex];
             const focusBoost = isFocused(i) ? 1.9 : 1;
             ctx.shadowColor = `rgba(${col.r},${col.g},${col.b},${0.55 * fade * focusBoost})`;

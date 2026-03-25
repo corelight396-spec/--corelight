@@ -259,9 +259,9 @@ body {
     height: 100vh;
     z-index: 2;
     pointer-events: none;
-    opacity: 0.9;
+    opacity: 0.78;
     mix-blend-mode: screen;
-    filter: saturate(1.08) contrast(1.05);
+    filter: saturate(1.06) contrast(1.03);
 }
 
 .index-crt-overlay {
