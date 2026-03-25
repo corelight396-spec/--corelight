@@ -1,7 +1,8 @@
 (function () {
     // TEMPETE NEON + ECLAIRS (lightweight canvas)
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
+    const motionForced = document.body.classList.contains("force-motion");
+    if (prefersReducedMotion && !motionForced) return;
 
     const FRAME_MS = Math.round(1000 / 15);
     const FLASH_PROB = 0.12;

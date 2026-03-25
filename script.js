@@ -808,6 +808,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // ═══════════════════════════════════════════════
     const PERF_KEY = "corelight-perf-lite";
     const perfToggle = document.getElementById("perf-toggle");
+    const MOTION_KEY = "corelight-force-motion";
+    const motionToggle = document.getElementById("motion-toggle");
 
     function applyPerfMode(enabled) {
         document.body.classList.toggle("perf-lite", enabled);
@@ -818,12 +820,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function getMotionMode() {
+        // "auto" | "force"
+        try {
+            return localStorage.getItem(MOTION_KEY) === "1" ? "force" : "auto";
+        } catch {
+            return "auto";
+        }
+    }
+
+    function applyMotionMode(mode) {
+        const force = mode === "force";
+        document.body.classList.toggle("force-motion", force);
+        if (motionToggle) {
+            motionToggle.classList.toggle("is-active", force);
+            motionToggle.setAttribute("aria-pressed", force ? "true" : "false");
+            motionToggle.textContent = force ? "MOTION: ON" : "MOTION: AUTO";
+        }
+        try {
+            localStorage.setItem(MOTION_KEY, force ? "1" : "0");
+        } catch {}
+    }
+
     try {
         const savedPerf = localStorage.getItem(PERF_KEY) === "1";
         applyPerfMode(savedPerf);
     } catch {
         applyPerfMode(false);
     }
+
+    // Motion mode (opt-in override for prefers-reduced-motion)
+    applyMotionMode(getMotionMode());
 
     if (perfToggle) {
         perfToggle.addEventListener("click", () => {
@@ -832,6 +859,13 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 localStorage.setItem(PERF_KEY, nextEnabled ? "1" : "0");
             } catch {}
+        });
+    }
+
+    if (motionToggle) {
+        motionToggle.addEventListener("click", () => {
+            const next = document.body.classList.contains("force-motion") ? "auto" : "force";
+            applyMotionMode(next);
         });
     }
 
@@ -880,7 +914,8 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAnimationFrame(paintCursorGlow);
     }
 
-    const cinematicAllowed = !prefersReducedMotion && !isCoarsePointer;
+    const motionForced = document.body.classList.contains("force-motion");
+    const cinematicAllowed = (!prefersReducedMotion || motionForced) && !isCoarsePointer;
     const cinematicEnabled = cinematicAllowed && !document.body.classList.contains("perf-lite");
     if (cinematicAllowed) {
         ensureCursorGlow();
@@ -909,7 +944,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Auto-disabled on reduced motion or perf-lite
     // ═══════════════════════════════════════════════
     const revealEls = Array.from(document.querySelectorAll(".reveal"));
-    const revealAllowed = !prefersReducedMotion && !document.body.classList.contains("perf-lite");
+    const revealAllowed = (!prefersReducedMotion || motionForced) && !document.body.classList.contains("perf-lite");
     if (revealEls.length > 0) {
         if (!revealAllowed) {
             revealEls.forEach((el) => el.classList.add("is-visible"));

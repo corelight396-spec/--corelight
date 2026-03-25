@@ -1,9 +1,10 @@
 (function () {
     // Hologram connection schema (pseudo-3D on Canvas2D)
-    // Auto-disabled on reduced motion, coarse pointer.
+    // Auto-disabled on reduced motion (unless force-motion), coarse pointer.
     const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionForced = document.body.classList.contains("force-motion");
     const isCoarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-    if (prefersReducedMotion || isCoarsePointer) return;
+    if ((prefersReducedMotion && !motionForced) || isCoarsePointer) return;
     if (document.body.classList.contains("perf-lite")) return;
 
     const canvas = document.getElementById("connex-3d");

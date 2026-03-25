@@ -1626,7 +1626,7 @@ select:focus {
    Reduced motion
    ═══════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-    .tab-panel,
+    body:not(.force-motion) .tab-panel,
     .tab-panel.tab-enter-forward,
     .tab-panel.tab-enter-backward,
     .tab-panel.tab-enter-active,
@@ -1635,18 +1635,23 @@ select:focus {
         transition: none;
         transform: none;
     }
-    .crt-overlay, .scanlines { animation: none; display: none; }
-    .noise-layer, .mesh-bg, .connex-canvas { display: none; }
-    .logo-glitch { animation: none; }
-    .glitch::before, .glitch::after,
-    .glitch-small::before, .glitch-small::after { animation: none; content: none; }
-    .progress-bar { animation: none; }
-    .footage-shell::before { animation: none; }
-    .hardware-card::before { animation: none; }
-    .hud-mast-inner::before { animation: none; display: none; }
-    .neon-button { transition: none; }
-    .button-glitch-layer { display: none; }
-    .reveal { opacity: 1; transform: none; transition: none; }
+    body:not(.force-motion) .crt-overlay,
+    body:not(.force-motion) .scanlines { animation: none; display: none; }
+    body:not(.force-motion) .noise-layer,
+    body:not(.force-motion) .mesh-bg,
+    body:not(.force-motion) .connex-canvas { display: none; }
+    body:not(.force-motion) .logo-glitch { animation: none; }
+    body:not(.force-motion) .glitch::before,
+    body:not(.force-motion) .glitch::after,
+    body:not(.force-motion) .glitch-small::before,
+    body:not(.force-motion) .glitch-small::after { animation: none; content: none; }
+    body:not(.force-motion) .progress-bar { animation: none; }
+    body:not(.force-motion) .footage-shell::before { animation: none; }
+    body:not(.force-motion) .hardware-card::before { animation: none; }
+    body:not(.force-motion) .hud-mast-inner::before { animation: none; display: none; }
+    body:not(.force-motion) .neon-button { transition: none; }
+    body:not(.force-motion) .button-glitch-layer { display: none; }
+    body:not(.force-motion) .reveal { opacity: 1; transform: none; transition: none; }
 }
 
 /* Runtime performance mode for constrained devices */
